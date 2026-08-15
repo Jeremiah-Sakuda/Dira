@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.next/
+.vercel/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.DS_Store
+coverage/
+/tmp/
+.dira-runtime/
