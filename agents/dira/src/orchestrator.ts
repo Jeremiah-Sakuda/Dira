@@ -130,7 +130,20 @@ export class DiraOrchestrator {
 
     if (existing) {
       // A previous worker crashed mid-flight; resume from durable state.
+      // Rehydrate the world model: initial state + persisted mutation + every
+      // action the verifier already confirmed (and nothing else).
       this.run = existing;
+      try {
+        this.nowMin = Math.max(0, isoToMinutes(trigger.receivedAtIso, this.state.horizonStartIso));
+      } catch {
+        this.nowMin = 0;
+      }
+      if (this.run.mutation) this.applyMutation(this.run.mutation, trigger);
+      for (const record of this.ledger.byWorkflow(workflowId)) {
+        if (record.status === 'VERIFIED') {
+          this.state = applyAction(this.state, record.action);
+        }
+      }
       this.recorder.record('EVENT', `Resuming workflow ${workflowId} from persisted state`);
       return this.repairLoop();
     }

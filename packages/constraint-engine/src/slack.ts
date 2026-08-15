@@ -364,11 +364,14 @@ export function computeFeasibility(state: DomainState): FeasibilityComputation {
     }
   }
 
-  // ---- Global slack: minimum over capacity buckets and applicable buffers. -
+  // ---- Global slack: minimum over capacity buckets and applicable buffers.
+  // With no constrained paths at all, slack is unbounded; we report the
+  // horizon length as its finite stand-in (slack can never exceed it, since
+  // usable capacity is a strict subset of the horizon).
   const numeric = paths
     .filter((p) => p.kind !== 'assignment' && p.slack_minutes !== null)
     .map((p) => p.slack_minutes as number);
-  const globalSlack = numeric.length ? Math.min(...numeric) : 0;
+  const globalSlack = numeric.length ? Math.min(...numeric) : state.horizonEndMin;
 
   return {
     feasible: violations.length === 0,

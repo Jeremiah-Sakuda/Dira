@@ -59,6 +59,11 @@ export interface ReplayRuntimeOptions {
   /** Extra stored interpretations (eval corpus, secondary trigger, ...). */
   extraInterpretations?: Record<string, InterpretationResult>;
   model?: ModelClient;
+  /**
+   * Reuse an existing "external world" (adapter set) — used by crash-resume
+   * tests where a fresh worker must see the state a dead worker left behind.
+   */
+  tools?: ReplayRuntime['tools'];
 }
 
 export async function buildReplayRuntime(
@@ -67,12 +72,15 @@ export async function buildReplayRuntime(
 ): Promise<ReplayRuntime> {
   const mode = opts.mode ?? 'deterministic';
 
-  const calendar = new FixtureCalendarTool(fixture.calendarSeed);
-  const gmail = new FixtureGmailTool(fixture.inboxSeed);
-  const org = new FixtureOrgTaskTool(fixture.orgSeed);
-  const recruiter = new FixtureRecruiterTool();
-  recruiter.setSlots(fixture.recruiterSlots.interviewId, fixture.recruiterSlots.slots);
-  const tools = { calendar, gmail, org, recruiter };
+  let tools = opts.tools;
+  if (!tools) {
+    const calendar = new FixtureCalendarTool(fixture.calendarSeed);
+    const gmail = new FixtureGmailTool(fixture.inboxSeed);
+    const org = new FixtureOrgTaskTool(fixture.orgSeed);
+    const recruiter = new FixtureRecruiterTool();
+    recruiter.setSlots(fixture.recruiterSlots.interviewId, fixture.recruiterSlots.slots);
+    tools = { calendar, gmail, org, recruiter };
+  }
 
   const model: ModelClient =
     opts.model ??
