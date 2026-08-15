@@ -33,7 +33,10 @@ const LEGAL_TRANSITIONS: Record<ActionStatus, ActionStatus[]> = {
   FAILED_TRANSIENT: ['PENDING_EXECUTION', 'FAILED_PERMANENT'],
   FAILED_PERMANENT: ['REPLAN_REQUIRED'],
   VERIFIED: [],
-  STALE: [],
+  // A STALE action belongs to an invalidated plan; if a *new* authorized plan
+  // re-issues the identical intent (same idempotency key), it is revived
+  // through AUTHORIZED rather than duplicated.
+  STALE: ['AUTHORIZED'],
   REPLAN_REQUIRED: [],
 };
 

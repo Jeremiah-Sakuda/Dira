@@ -313,8 +313,8 @@ export function buildGoldenFixture(variation: GoldenVariation = {}): GoldenFixtu
     people: {
       [PEOPLE.maya.id]: { ...PEOPLE.maya, availability: [{ start: at(1, 9), end: at(1, 18) }] },
       [PEOPLE.tunde.id]: { ...PEOPLE.tunde, availability: [{ start: at(1, 9), end: at(1, 18) }] },
-      [PEOPLE.professor.id]: { ...PEOPLE.professor },
-      [PEOPLE.recruiter.id]: { ...PEOPLE.recruiter },
+      [PEOPLE.professor.id]: { ...PEOPLE.professor, authorityDomains: ['academic'] },
+      [PEOPLE.recruiter.id]: { ...PEOPLE.recruiter, authorityDomains: ['career'] },
     },
     constraints: {
       'post-exam-recovery-buffer': {

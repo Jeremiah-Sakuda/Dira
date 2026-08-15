@@ -15,10 +15,24 @@ export interface PlanValidation {
 }
 
 /**
+ * Repair margin: the minimum slack across *capacity* paths — how close the
+ * most constrained deadline is to being unmeetable. Buffer constraints are
+ * excluded here: a buffer satisfied at exactly its required length is fully
+ * satisfied, not at risk (Global Slack still reports the true minimum).
+ */
+export function repairMarginMinutes(feasibility: FeasibilityComputation): number {
+  const capacity = feasibility.paths
+    .filter((p) => p.kind === 'capacity' && p.slack_minutes !== null)
+    .map((p) => p.slack_minutes as number);
+  return capacity.length ? Math.min(...capacity) : feasibility.global_slack_minutes;
+}
+
+/**
  * Candidate plans are proposals; this is the authority (PRD §19).
- * A plan is acceptable only if the simulated world has zero hard violations
- * and Global Slack of at least `repairSlackMarginMin` — an autonomous system
- * should not repair a schedule onto a knife edge.
+ * A plan is acceptable only if the simulated world has zero hard violations,
+ * non-negative Global Slack, and a capacity margin of at least
+ * `repairSlackMarginMin` — an autonomous system should not repair the most
+ * constrained deadline onto a knife edge.
  */
 export function validatePlan(
   state: DomainState,
@@ -49,12 +63,20 @@ export function validatePlan(
       rejectionReason: `hard constraint violated: ${feasibility.violations[0]!.type}`,
     };
   }
-  if (feasibility.global_slack_minutes < state.config.repairSlackMarginMin) {
+  if (feasibility.global_slack_minutes < 0) {
+    return {
+      plan, feasibility, cost, simulated,
+      acceptable: false,
+      rejectionReason: `negative global slack: ${feasibility.global_slack_minutes} min`,
+    };
+  }
+  const margin = repairMarginMinutes(feasibility);
+  if (margin < state.config.repairSlackMarginMin) {
     return {
       plan, feasibility, cost, simulated,
       acceptable: false,
       rejectionReason:
-        `insufficient repair margin: ${feasibility.global_slack_minutes} min < ` +
+        `insufficient repair margin: ${margin} min < ` +
         `${state.config.repairSlackMarginMin} min required`,
     };
   }

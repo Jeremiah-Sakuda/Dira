@@ -118,6 +118,12 @@ export interface Person {
   email: string;
   /** availability intervals for delegation feasibility checks */
   availability?: Interval[];
+  /**
+   * Domains this person has authority to mutate via email (a professor can
+   * move an exam; a recruiter can move an interview; a stranger can move
+   * nothing). Part of the prompt-injection surface reduction (PRD §47).
+   */
+  authorityDomains?: Domain[];
 }
 
 export interface NamedConstraint {

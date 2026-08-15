@@ -8,11 +8,14 @@
   "exports": {
     ".": "./golden-workflow/index.ts",
     "./golden": "./golden-workflow/index.ts",
+    "./golden-assertions": "./golden-workflow/assertions.ts",
     "./secondary": "./secondary-workflow/index.ts",
     "./model-eval": "./model-eval/corpus.ts"
   },
   "dependencies": {
+    "@dira/agent": "*",
     "@dira/commitment-model": "*",
+    "@dira/constraint-engine": "*",
     "@dira/event-schema": "*",
     "@dira/tool-contracts": "*"
   }

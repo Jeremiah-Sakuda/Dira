@@ -63,6 +63,13 @@ export function computePlanCost(
         break;
       case 'MOVE_CALENDAR_EVENT': {
         const target = state.commitments[action.target];
+        const desired = action.desired_state as { start_min?: unknown };
+        const mirrorsApprovedSlot = (state.approvedSlots[action.target] ?? []).some(
+          (s) => s.startMin === desired.start_min && action.provenance.includes(s.provenance),
+        );
+        if (mirrorsApprovedSlot) {
+          break; // counterpart-offered move; disruption already priced by the booking
+        }
         const external = target && target.participants.some((p) => p !== state.userId);
         if (external) add(`social disruption: ${action.summary}`, weights.socialDisruption);
         else add(`minor schedule move: ${action.summary}`, weights.minorScheduleMove);
