@@ -192,27 +192,28 @@ export function propagateConsequences(
       }
       case 'MUST_PRECEDE':
       case 'MUST_FOLLOW': {
-        // Windowed-task edges: re-evaluate the task's assignment feasibility.
-        if (edge.from !== currentId || !src || src.kind !== 'effort') {
-          // Also propagate onward from a windowed task to its marker.
-          if (edge.from === currentId && dst) {
+        if (edge.from !== currentId || !src) return;
+        if (src.kind === 'effort') {
+          // Windowed-task edge: re-evaluate the task's assignment feasibility.
+          const prev = assignmentStatus(oldF, edge.from);
+          const next = assignmentStatus(newF, edge.from);
+          record(
+            edge.from, edge.from, edge.type,
+            'execution window', prev, next,
+            `${src.title} window feasibility for owner "${src.owner}"`,
+            prev !== next,
+          );
+          // A broken windowed task puts its downstream marker at risk too —
+          // but only downstream (MUST_PRECEDE), never the upstream release.
+          if (edge.type === 'MUST_PRECEDE' && dst) {
             record(
               edge.from, edge.to, edge.type,
-              'ordering', 'SATISFIED', 'SATISFIED',
-              `${src?.title ?? edge.from} feeds ${dst.title}`,
-              assignmentStatus(oldF, edge.from) !== assignmentStatus(newF, edge.from),
+              'ordering input at risk', prev, next,
+              `${dst.title} consumes the output of ${src.title}`,
+              prev !== next,
             );
           }
-          return;
         }
-        const prev = assignmentStatus(oldF, edge.from);
-        const next = assignmentStatus(newF, edge.from);
-        record(
-          edge.from, edge.from, edge.type,
-          'execution window', prev, next,
-          `${src.title} window feasibility for owner "${src.owner}"`,
-          prev !== next,
-        );
         return;
       }
       case 'DEPENDS_ON': {
@@ -222,7 +223,10 @@ export function propagateConsequences(
         const prereqBroken =
           assignmentStatus(newF, edge.to) === 'VIOLATED' ||
           capacityStatus(newF, edge.to) === 'VIOLATED' ||
-          newState.commitments[edge.to]?.status === 'DROPPED';
+          newState.commitments[edge.to]?.status === 'DROPPED' ||
+          // Transitive risk: an affected prerequisite endangers dependents
+          // even when the prerequisite itself is not directly violated.
+          affected.has(edge.to);
         const prereqWasBroken =
           assignmentStatus(oldF, edge.to) === 'VIOLATED' ||
           capacityStatus(oldF, edge.to) === 'VIOLATED' ||

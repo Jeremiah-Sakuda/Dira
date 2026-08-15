@@ -76,6 +76,23 @@ export function evaluateAction(state: DomainState, action: PlannedAction): Polic
           reason: `${target.title} is ${target.flexibility}`,
         };
       }
+      if (target.flexibility === 'MOVE_WITHIN_WINDOW') {
+        // Calendar may mirror a booking only onto an explicitly approved slot.
+        const slots = state.approvedSlots[action.target] ?? [];
+        const desired = action.desired_state as { start_min?: unknown };
+        const match = slots.find((s) => s.startMin === desired.start_min);
+        if (match && action.provenance.includes(match.provenance)) {
+          return {
+            verdict: 'ALLOW',
+            rule: 'sync-calendar-with-approved-booking',
+            reason: `mirrors the recruiter-approved slot (${match.provenance})`,
+          };
+        }
+        return deny(
+          'window-move-requires-approved-slot',
+          'window-bound commitments may only move onto approved alternatives',
+        );
+      }
       return {
         verdict: 'REQUIRE_APPROVAL',
         rule: 'default-move-requires-approval',

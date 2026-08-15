@@ -1,0 +1,19 @@
+{
+  "name": "@dira/fixtures",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./golden-workflow/index.ts",
+  "types": "./golden-workflow/index.ts",
+  "exports": {
+    ".": "./golden-workflow/index.ts",
+    "./golden": "./golden-workflow/index.ts",
+    "./secondary": "./secondary-workflow/index.ts",
+    "./model-eval": "./model-eval/corpus.ts"
+  },
+  "dependencies": {
+    "@dira/commitment-model": "*",
+    "@dira/event-schema": "*",
+    "@dira/tool-contracts": "*"
+  }
+}

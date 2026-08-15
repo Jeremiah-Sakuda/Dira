@@ -317,6 +317,18 @@ export function computeFeasibility(state: DomainState): FeasibilityComputation {
     }
   }
 
+  // ---- 4b. Critical events that lost their scheduled time entirely. --------
+  for (const c of all) {
+    if (c.kind !== 'event' || c.owner !== user) continue;
+    if (c.startMin === undefined && (c.criticality === 'CRITICAL' || c.criticality === 'HIGH')) {
+      violations.push({
+        type: 'UNSCHEDULED',
+        commitment_id: c.id,
+        detail: `${c.title} has no confirmed time`,
+      });
+    }
+  }
+
   // ---- 5. Ordering edges between scheduled commitments. --------------------
   for (const e of state.edges) {
     if (e.type !== 'MUST_PRECEDE' && e.type !== 'MUST_FOLLOW') continue;

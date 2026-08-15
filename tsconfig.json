@@ -4,6 +4,7 @@
     "packages/*/src/**/*.ts",
     "adapters/*/src/**/*.ts",
     "agents/*/src/**/*.ts",
+    "fixtures/**/*.ts",
     "services/*/src/**/*.ts",
     "scripts/**/*.ts",
     "tests/**/*.ts"

@@ -82,6 +82,7 @@ export const ViolationSchema = z.object({
     'ASSIGNEE_UNAVAILABLE',
     'DEADLINE_UNMEETABLE',
     'DEPENDENCY_UNSATISFIED',
+    'UNSCHEDULED',
   ]),
   commitment_id: z.string(),
   detail: z.string(),
