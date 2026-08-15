@@ -48,7 +48,8 @@ export class FixtureModelClient implements ModelClient {
  */
 export class GeminiModelClient implements ModelClient {
   name = 'gemini';
-  constructor(private readonly model = process.env.DIRA_GEMINI_MODEL ?? 'gemini-2.5-flash') {}
+  // Hackathon rules require Gemini 3.5+; override with DIRA_GEMINI_MODEL.
+  constructor(private readonly model = process.env.DIRA_GEMINI_MODEL ?? 'gemini-3.5-flash') {}
 
   async interpret(email: RawEmailEvent, context: InterpretationContext): Promise<unknown> {
     const { GoogleGenAI } = await import('@google/genai');
