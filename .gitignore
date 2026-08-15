@@ -10,3 +10,5 @@ dist/
 coverage/
 /tmp/
 .dira-runtime/
+.vercel
+.env*

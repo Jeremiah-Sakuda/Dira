@@ -7,6 +7,9 @@ make your plans feasible again.**
 *One thing changes. Everything adapts.*
 
 [![ci](https://github.com/Jeremiah-Sakuda/Dira/actions/workflows/ci.yml/badge.svg)](https://github.com/Jeremiah-Sakuda/Dira/actions/workflows/ci.yml)
+&nbsp;**Live demo:** [dira-phi.vercel.app](https://dira-phi.vercel.app) — the
+engine executes server-side per request; the Interventions page streams a
+fresh live run.
 
 ---
 

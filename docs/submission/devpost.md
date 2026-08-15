@@ -88,5 +88,5 @@ Next.js · Vercel · zod · fast-check · Vitest
 ## Links
 
 - Repo: https://github.com/Jeremiah-Sakuda/Dira
-- Live dashboard: (Vercel URL)
+- Live dashboard: https://dira-phi.vercel.app
 - Reliability evidence: CI `golden-replay-20x` artifact
