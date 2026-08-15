@@ -41,9 +41,9 @@ planned session emits a `CONFLICTS_WITH` impact even without a stored edge.
 
 Exam → Wed 14:00 reaches exactly six commitments:
 prep (deadline collapsed, 5 reservations invalidated) → PS6 (shared pool
-tightened, 483→153) · interview (buffer N/A→VIOLATED) · QA (session overlap +
-window infeasible) → deck freeze (input at risk) → sponsor presentation
-(dependency chain at risk).
+tightened, capacity-path slack 483 → 123) · interview (buffer N/A→VIOLATED) ·
+QA (session overlap + window infeasible) → deck freeze (input at risk) →
+sponsor presentation (dependency chain at risk).
 
 In the exam-at-1-PM variation the QA session survives, so the sponsor chain is
 *not* dragged in (3 affected) — propagation reflects state, not the scenario.

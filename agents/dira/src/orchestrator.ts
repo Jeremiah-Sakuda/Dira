@@ -1,5 +1,6 @@
 import {
   ActionLedger,
+  idempotencyKey,
   type ActionRecord,
 } from '@dira/action-ledger';
 import {
@@ -128,7 +129,8 @@ export class DiraOrchestrator {
       return existing;
     }
 
-    if (existing) {
+    const persistedMutation = existing?.mutation;
+    if (existing && persistedMutation) {
       // A previous worker crashed mid-flight; resume from durable state.
       // Rehydrate the world model: initial state + persisted mutation + every
       // action the verifier already confirmed (and nothing else).
@@ -138,7 +140,7 @@ export class DiraOrchestrator {
       } catch {
         this.nowMin = 0;
       }
-      if (this.run.mutation) this.applyMutation(this.run.mutation, trigger);
+      this.applyMutation(persistedMutation, trigger);
       for (const record of this.ledger.byWorkflow(workflowId)) {
         if (record.status === 'VERIFIED') {
           this.state = applyAction(this.state, record.action);
@@ -148,19 +150,29 @@ export class DiraOrchestrator {
       return this.repairLoop();
     }
 
-    this.run = {
-      id: workflowId,
-      eventId: trigger.eventId,
-      status: 'RUNNING',
-      impacts: [],
-      affected: [],
-      planningRounds: [],
-      selectedPlanIds: [],
-      failuresRecovered: 0,
-      replans: 0,
-      userInterventions: 0,
-    };
-    await this.workflows.save(this.run);
+    if (existing) {
+      // The previous worker died before interpretation completed: nothing has
+      // executed (actions only exist after a mutation is stored), so the only
+      // safe resume is to restart the workflow from the event itself. A bare
+      // "continue" here would compute feasibility on the unmutated state and
+      // falsely resolve, permanently swallowing the event.
+      this.run = existing;
+      this.recorder.record('EVENT', `Restarting workflow ${workflowId}: interpretation never completed`);
+    } else {
+      this.run = {
+        id: workflowId,
+        eventId: trigger.eventId,
+        status: 'RUNNING',
+        impacts: [],
+        affected: [],
+        planningRounds: [],
+        selectedPlanIds: [],
+        failuresRecovered: 0,
+        replans: 0,
+        userInterventions: 0,
+      };
+      await this.workflows.save(this.run);
+    }
 
     try {
       this.nowMin = Math.max(0, isoToMinutes(trigger.receivedAtIso, this.state.horizonStartIso));
@@ -278,6 +290,25 @@ export class DiraOrchestrator {
 
   /** Verify or fail any actions a previous (crashed) worker left in flight. */
   private async reconcileInFlight(): Promise<boolean> {
+    // First, finish any interrupted failure handling: a crash between
+    // FAILED_PERMANENT / REPLAN_REQUIRED and plan invalidation must not let
+    // this worker execute the remainder of a plan that is already dead.
+    const records = this.ledger.byWorkflow(this.run.id);
+    const deadPlanIds = new Set(
+      records
+        .filter((r) => r.status === 'FAILED_PERMANENT' || r.status === 'REPLAN_REQUIRED')
+        .map((r) => r.planId)
+        .filter((p): p is string => p !== undefined),
+    );
+    for (const r of records) {
+      if (r.status === 'FAILED_PERMANENT') {
+        await this.ledger.transition(r.actionId, 'REPLAN_REQUIRED', {}, 'reconciled after restart');
+      }
+      if (r.status === 'PENDING_EXECUTION' && r.planId !== undefined && deadPlanIds.has(r.planId)) {
+        await this.ledger.transition(r.actionId, 'STALE', {}, 'sibling action failed; plan invalidated on resume');
+      }
+    }
+
     for (const record of this.ledger.byWorkflow(this.run.id)) {
       if (record.status === 'EXECUTING') {
         const observed = await this.verifyExternal(record.action);
@@ -433,26 +464,85 @@ export class DiraOrchestrator {
     const acceptable = rankValidations(validations).filter(
       (v) => v.acceptable && policies[validations.indexOf(v)]!.autonomous,
     );
-    const chosen = acceptable[0];
-    if (!chosen) return false;
 
-    this.run.selectedPlanIds.push(chosen.plan.id);
-    this.recorder.record(
-      'SELECT',
-      `Lowest-cost feasible plan selected: ${chosen.plan.label} ` +
-        `(cost ${chosen.cost.total}, restored slack ${formatSlackHours(chosen.feasibility.global_slack_minutes)})`,
-      { planId: chosen.plan.id, cost: chosen.cost, slack: chosen.feasibility.global_slack_minutes },
-    );
+    // Walk the ranking until a plan is *viable*: every action (including the
+    // policy-mandated notifications) must either be new, revivable, or
+    // already satisfied. An intent that previously failed permanently can
+    // never be re-queued, so a plan re-issuing it would silently lose an
+    // action — reject such plans instead of executing them partially.
+    for (const chosen of acceptable) {
+      const actions = this.expandWithNotifications(chosen.plan.actions);
+      if (actions === null) continue; // an action failed the policy re-check
 
-    // Policy verdicts per action + auto-notification for ALLOW_AND_NOTIFY.
-    const actions: { action: PlannedAction; decision: PolicyDecision }[] = [];
-    for (const action of chosen.plan.actions) {
-      const decision = evaluateAction(this.state, action);
-      this.recorder.record('POLICY', `${decision.verdict}: ${action.summary} [${decision.rule}]`);
-      if (decision.verdict === 'DENY' || decision.verdict === 'REQUIRE_APPROVAL') {
-        // Defense in depth: ranking should have filtered these already.
-        return false;
+      const roundPlanId = `round${this.run.planningRounds.length}:${chosen.plan.id}`;
+      const blocked = actions.find(({ action }) => {
+        const existing = this.ledger.findByIdempotencyKey(
+          idempotencyKey(this.run.id, action),
+        );
+        return (
+          existing !== undefined &&
+          (existing.status === 'REPLAN_REQUIRED' || existing.status === 'FAILED_PERMANENT')
+        );
+      });
+      if (blocked) {
+        this.recorder.record(
+          'PLAN',
+          `Plan ${chosen.plan.id} rejected: "${blocked.action.summary}" already failed permanently`,
+        );
+        continue;
       }
+
+      this.run.selectedPlanIds.push(chosen.plan.id);
+      this.recorder.record(
+        'SELECT',
+        `Lowest-cost feasible plan selected: ${chosen.plan.label} ` +
+          `(cost ${chosen.cost.total}, restored slack ${formatSlackHours(chosen.feasibility.global_slack_minutes)})`,
+        { planId: chosen.plan.id, cost: chosen.cost, slack: chosen.feasibility.global_slack_minutes },
+      );
+
+      let created = 0;
+      let revived = 0;
+      for (const [seq, { action, decision }] of actions.entries()) {
+        this.recorder.record('POLICY', `${decision.verdict}: ${action.summary} [${decision.rule}]`);
+        const { record, created: isNew } = await this.ledger.persistIntent(
+          this.run.id,
+          action,
+          decision.verdict,
+          decision.rule,
+          { planId: roundPlanId, seq },
+        );
+        if (isNew) {
+          created += 1;
+          await this.ledger.transition(record.actionId, 'AUTHORIZED');
+          await this.ledger.transition(record.actionId, 'PENDING_EXECUTION');
+        } else if (record.status === 'STALE') {
+          revived += 1;
+          await this.ledger.transition(record.actionId, 'AUTHORIZED', {}, 're-authorized by new plan');
+          await this.ledger.transition(record.actionId, 'PENDING_EXECUTION');
+        }
+      }
+      this.recorder.record(
+        'LEDGER',
+        `${created + revived} action intent(s) persisted to durable ledger` +
+          (revived ? ` (${revived} revived from invalidated plan)` : ''),
+      );
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Re-check policy per action and append the notifications ALLOW_AND_NOTIFY
+   * mandates. Returns null if any action (or mandated notification) is not
+   * autonomously executable — defense in depth behind the ranking filter.
+   */
+  private expandWithNotifications(
+    planActions: PlannedAction[],
+  ): { action: PlannedAction; decision: PolicyDecision }[] | null {
+    const actions: { action: PlannedAction; decision: PolicyDecision }[] = [];
+    for (const action of planActions) {
+      const decision = evaluateAction(this.state, action);
+      if (decision.verdict === 'DENY' || decision.verdict === 'REQUIRE_APPROVAL') return null;
       actions.push({ action, decision });
       if (decision.verdict === 'ALLOW_AND_NOTIFY' && action.type === 'DELEGATE_TASK') {
         const owner = (action.desired_state as { new_owner?: string }).new_owner ?? '';
@@ -477,35 +567,14 @@ export class DiraOrchestrator {
           external_system: 'gmail',
           summary: `Notify ${person?.name ?? owner} about the delegation`,
         };
-        actions.push({ action: notify, decision: evaluateAction(this.state, notify) });
+        const notifyDecision = evaluateAction(this.state, notify);
+        if (notifyDecision.verdict === 'DENY' || notifyDecision.verdict === 'REQUIRE_APPROVAL') {
+          return null; // the mandated notification itself must be executable
+        }
+        actions.push({ action: notify, decision: notifyDecision });
       }
     }
-
-    let created = 0;
-    let revived = 0;
-    for (const { action, decision } of actions) {
-      const { record, created: isNew } = await this.ledger.persistIntent(
-        this.run.id,
-        action,
-        decision.verdict,
-        decision.rule,
-      );
-      if (isNew) {
-        created += 1;
-        await this.ledger.transition(record.actionId, 'AUTHORIZED');
-        await this.ledger.transition(record.actionId, 'PENDING_EXECUTION');
-      } else if (record.status === 'STALE') {
-        revived += 1;
-        await this.ledger.transition(record.actionId, 'AUTHORIZED', {}, 're-authorized by new plan');
-        await this.ledger.transition(record.actionId, 'PENDING_EXECUTION');
-      }
-    }
-    this.recorder.record(
-      'LEDGER',
-      `${created + revived} action intent(s) persisted to durable ledger` +
-        (revived ? ` (${revived} revived from invalidated plan)` : ''),
-    );
-    return true;
+    return actions;
   }
 
   private async refreshLiveSlots(): Promise<Record<string, LiveSlot[]>> {

@@ -33,7 +33,12 @@ export default async function GraphPage() {
         reached by propagation during the 48-Hour Shock.
       </p>
       <div className="panel" style={{ overflowX: 'auto' }}>
-        <svg viewBox={`0 0 1080 ${maxY}`} style={{ minWidth: 900, width: '100%', height: 'auto' }}>
+        <svg
+          viewBox={`0 0 1080 ${maxY}`}
+          style={{ minWidth: 900, width: '100%', height: 'auto' }}
+          role="img"
+          aria-label="Typed commitment graph across academic, career, organization and personal domains"
+        >
           {Object.entries(colX).map(([domain, x]) => (
             <text key={domain} x={x} y={40} textAnchor="middle" fontSize="11" letterSpacing="2"
               fill="var(--text-muted)" fontFamily="var(--mono)">

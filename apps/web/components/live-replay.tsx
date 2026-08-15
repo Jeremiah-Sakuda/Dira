@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { PHASE_TONE } from './status';
 
 interface Entry {
@@ -26,12 +26,18 @@ export function LiveReplay() {
   const [running, setRunning] = useState(false);
   const [summary, setSummary] = useState<DoneSummary | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
+  const sourceRef = useRef<EventSource | null>(null);
+
+  // Close the stream if the viewer navigates away mid-run.
+  useEffect(() => () => sourceRef.current?.close(), []);
 
   const start = useCallback(() => {
     setEntries([]);
     setSummary(null);
     setRunning(true);
+    sourceRef.current?.close();
     const source = new EventSource('/api/replay/stream');
+    sourceRef.current = source;
     source.addEventListener('entry', (e) => {
       const entry = JSON.parse((e as MessageEvent).data) as Entry;
       setEntries((prev) => [...prev, entry]);

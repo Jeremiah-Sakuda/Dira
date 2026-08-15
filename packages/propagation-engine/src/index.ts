@@ -192,6 +192,19 @@ export function propagateConsequences(
       }
       case 'MUST_PRECEDE':
       case 'MUST_FOLLOW': {
+        // A mutated window *marker* (the edge target) endangers the windowed
+        // task at the edge source: re-evaluate the task and enqueue it.
+        if (edge.to === currentId && src && src.kind === 'effort') {
+          const prev = assignmentStatus(oldF, edge.from);
+          const next = assignmentStatus(newF, edge.from);
+          record(
+            currentId, edge.from, edge.type,
+            'execution window boundary moved', prev, next,
+            `${dst?.title ?? currentId} bounds the window of ${src.title}`,
+            prev !== next,
+          );
+          return;
+        }
         if (edge.from !== currentId || !src) return;
         if (src.kind === 'effort') {
           // Windowed-task edge: re-evaluate the task's assignment feasibility.
@@ -237,7 +250,9 @@ export function propagateConsequences(
           prereqWasBroken ? 'VIOLATED' : 'SATISFIED',
           prereqBroken ? 'VIOLATED' : 'SATISFIED',
           `${src.title} depends on ${dst?.title ?? edge.to}`,
-          prereqBroken !== prereqWasBroken,
+          // Also transmit when the prerequisite *is* the mutated commitment:
+          // a dependent of the changed node is affected by definition.
+          prereqBroken !== prereqWasBroken || edge.to === changedCommitmentId,
         );
         return;
       }
@@ -279,6 +294,12 @@ function relevantEdges(state: DomainState, id: string): CommitmentEdge[] {
   return state.edges.filter(
     (e) =>
       e.from === id ||
-      (e.to === id && (e.type === 'DEPENDS_ON' || e.type === 'REQUIRES_BUFFER' || e.type === 'SHARES_RESOURCE_WITH')),
+      (e.to === id &&
+        (e.type === 'DEPENDS_ON' ||
+          e.type === 'REQUIRES_BUFFER' ||
+          e.type === 'SHARES_RESOURCE_WITH' ||
+          // Window markers transmit to the windowed tasks they bound.
+          e.type === 'MUST_PRECEDE' ||
+          e.type === 'MUST_FOLLOW')),
   );
 }

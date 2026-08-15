@@ -62,8 +62,8 @@ build ships a native loop instead of an untestable wrapper.
 
 ## Replay modes (PRD §39)
 
-| Mode | Interpretation | Tools | Use |
+| Mode | Interpretation | Tools | Status |
 | --- | --- | --- | --- |
-| `deterministic` | stored fixtures | local adapters | CI, judges, zero credentials |
-| `live-model` | Gemini | local adapters | model-level integration testing |
-| `production` | Gemini via Vertex | Google APIs + controlled endpoints | cloud demo |
+| `deterministic` | stored fixtures | local adapters | implemented — CI, judges, zero credentials |
+| `live-model` | Gemini | local adapters | implemented — model-level integration testing |
+| `production` | Gemini via Vertex | Google APIs + controlled endpoints | documented seam (DEVIATIONS #13) — target for the cloud demo |

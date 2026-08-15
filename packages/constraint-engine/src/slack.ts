@@ -106,6 +106,7 @@ function isPooledTask(state: DomainState, c: Commitment): boolean {
 export function placeWindowedTask(
   state: DomainState,
   task: Commitment,
+  extraBusy: Interval[] = [],
 ): WindowedPlacement {
   const window = effectiveWindow(state, task);
   const effort = remainingEffortMin(task);
@@ -119,7 +120,7 @@ export function placeWindowedTask(
 
   // Owner busy time: for the user, all scheduled non-reservation commitments;
   // for other people we only know what the org tools tell us (availability).
-  const busy: Interval[] = [];
+  const busy: Interval[] = [...extraBusy];
   for (const c of Object.values(state.commitments)) {
     if (!isSchedulable(c) || c.id === task.id) continue;
     if (c.owner !== task.owner) continue;
@@ -165,29 +166,46 @@ export function computeFeasibility(state: DomainState): FeasibilityComputation {
   const all = Object.values(state.commitments).filter(isSchedulable);
 
   // ---- 1. Windowed tasks: validate stored placement or find one. -----------
+  // Placements accumulate per owner so two windowed tasks can never be
+  // assigned the same minutes.
   const windowedBusy: Interval[] = [];
-  for (const task of all) {
+  const placedByOwner = new Map<string, Interval[]>();
+  for (const task of all.slice().sort((a, b) => a.id.localeCompare(b.id))) {
     if (!isWindowedTask(state, task)) continue;
     const window = effectiveWindow(state, task)!;
     const effort = remainingEffortMin(task);
     if (effort <= 0) continue;
 
+    const ownerPlaced = placedByOwner.get(task.owner) ?? [];
     let placement: WindowedPlacement;
     const stored: Interval | null =
       task.startMin !== undefined && task.durationMin
         ? { start: task.startMin, end: task.startMin + task.durationMin }
         : null;
 
+    const ownerAvailability =
+      task.owner === state.userId
+        ? state.availability
+        : state.people[task.owner]?.availability ?? [];
     const storedValid =
       stored !== null &&
       stored.start >= window.release &&
       stored.end <= window.deadline &&
-      !conflictsWithOwnerEvents(state, task, stored);
+      // The session must be long enough for the remaining work…
+      stored.end - stored.start >= effort &&
+      // …sit inside the owner's real availability…
+      ownerAvailability.some((w) => stored.start >= w.start && stored.end <= w.end) &&
+      // …and collide with neither the owner's events nor earlier placements.
+      !conflictsWithOwnerEvents(state, task, stored) &&
+      !ownerPlaced.some((p) => overlaps(p, stored));
 
     if (storedValid) {
       placement = { commitmentId: task.id, owner: task.owner, interval: stored, valid: true };
     } else {
-      placement = placeWindowedTask(state, task);
+      placement = placeWindowedTask(state, task, ownerPlaced);
+    }
+    if (placement.valid && placement.interval) {
+      placedByOwner.set(task.owner, [...ownerPlaced, placement.interval]);
     }
     placements.push(placement);
 
@@ -295,13 +313,15 @@ export function computeFeasibility(state: DomainState): FeasibilityComputation {
   }
 
   // ---- 4. Hard overlaps between the user's scheduled commitments. ----------
+  // Events and real blocks alike: a plan that moves a block onto an event is
+  // a hard violation, not a quiet double-booking.
   const scheduled = all.filter(
     (c) =>
       c.owner === user &&
       c.startMin !== undefined &&
       (c.durationMin ?? 0) > 0 &&
       !c.reservesEffortFor &&
-      c.kind === 'event',
+      (c.kind === 'event' || c.kind === 'block'),
   );
   for (let i = 0; i < scheduled.length; i++) {
     for (let j = i + 1; j < scheduled.length; j++) {

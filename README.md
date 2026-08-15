@@ -46,16 +46,17 @@ Zero user interventions. One injected failure, recovered. Four external
 systems mutated and independently verified.
 
 ```
-13:30:05  FEASIBILITY  Global slack +4.1h → -3.6h; 3 violation(s)
-13:30:06  PLAN         6 candidate repair(s) evaluated
-13:31:01  ACTION       Book "TechCorp technical interview" at Thu 10:00
-13:31:02  ERROR        409 SLOT_NO_LONGER_AVAILABLE
-13:31:17  OBSERVE      External state refreshed after failure
-13:31:18  REPLAN       Re-evaluating remaining repair options
-13:31:44  ACTION       Book "TechCorp technical interview" at Thu 13:00
-13:31:46  VERIFY       Verified: Book "TechCorp technical interview"
-13:33:08  RESOLVED     Feasibility restored — global slack +1.3h
+FEASIBILITY  Global slack +4.1h → -3.6h; 3 violation(s)
+PLAN         6 candidate repair(s) evaluated
+ACTION       Book "TechCorp technical interview" at Thu 10:00
+ERROR        409 SLOT_NO_LONGER_AVAILABLE
+OBSERVE      External state refreshed after failure
+REPLAN       Re-evaluating remaining repair options
+ACTION       Book "TechCorp technical interview" at Thu 13:00
+VERIFY       Verified: Book "TechCorp technical interview"
+RESOLVED     Feasibility restored — global slack +1.3h
 ```
+*(elided excerpt — run `make demo-replay` for the full timestamped recording)*
 
 ## Run it yourself — no credentials, one command
 
@@ -181,8 +182,11 @@ the eval corpus. More: [`docs/security/README.md`](docs/security/README.md).
 
 `REPLAY_MODE=deterministic` (default) — stored interpretation fixtures, local
 adapters, zero credentials. `REPLAY_MODE=live-model` — Gemini interprets
-(`GEMINI_API_KEY`), tools stay local. `REPLAY_MODE=production` — real Google
-services (Cloud Run topology in [`infrastructure/`](infrastructure)).
+(`GEMINI_API_KEY`), tools stay local. The third PRD mode, `production`
+(real Google Calendar/Gmail APIs on the Cloud Run topology in
+[`infrastructure/`](infrastructure)), is a documented seam, not yet
+implemented — the `ToolSet` contract is the swap point (see
+[`DEVIATIONS.md`](DEVIATIONS.md) #13).
 
 ## Testing & reliability evidence
 
@@ -217,9 +221,13 @@ npm --workspace apps/web run dev   # dashboard on :3000
 
 ## Known limitations
 
-- Live Gemini and GCP deployment paths are implemented but not exercised in
-  this environment (no credentials); the replay/CI evidence is the
-  reproducible core.
+- Live Gemini interpretation is implemented but not exercised in this
+  environment (no API key); production Google Calendar/Gmail adapters are a
+  documented seam, not yet written (DEVIATIONS #13). The replay/CI evidence
+  is the reproducible core.
+- Feasibility computes over the whole horizon; the planner clips repairs to
+  "now", but already-elapsed free time still counts toward reported slack
+  until events are re-anchored — a known modeling simplification.
 - Recruiter scheduling and the org task tracker are controlled test doubles
   (PRD §46), clearly labeled — not claimed third-party integrations.
 - One user, one week horizon, single-timezone fixture. Multi-user and

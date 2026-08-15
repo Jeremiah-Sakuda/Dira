@@ -54,11 +54,12 @@ already discrete async calls) were designed for that port.
 
 **PRD:** §8 Gemini interprets events; §39 defines deterministic / live-model /
 production replay modes.
-**Built:** exactly the §39 switch. `REPLAY_MODE=live-model` uses Gemini
-(`@google/genai`, `GEMINI_API_KEY` or Vertex ADC) with strict schema
-validation; the default mode uses stored interpretation fixtures so judges
-and CI need zero credentials. The live path is implemented but was not
-exercised in this environment (no API key present).
+**Built:** the deterministic and live-model modes of the §39 switch.
+`REPLAY_MODE=live-model` uses Gemini (`@google/genai`, `GEMINI_API_KEY` or
+Vertex ADC) with strict schema validation; the default mode uses stored
+interpretation fixtures so judges and CI need zero credentials. The live
+path is implemented but was not exercised in this environment (no API key
+present). The `production` mode value is not implemented — see #13.
 
 ## 5. PRD §17 per-path slack figures treated as illustrative
 
@@ -138,3 +139,20 @@ independent verify, VERIFIED — is already the coordination protocol, and the
 crash-resume chaos test proves another worker can pick up mid-flight state).
 For hackathon scale, one process with a durable outbox is more reliable than
 four processes and a queue — and reliability is the judged property (§61).
+
+## 13. Production Google Calendar/Gmail API adapters are not implemented
+
+**PRD:** §30/§32 real Gmail and Google Calendar integrations; §39 a
+`REPLAY_MODE=production` using real Google services.
+**Built:** the `CalendarTool` / `GmailTool` contracts (narrow operations +
+independent verification reads, PRD §30) with stateful fixture
+implementations. Adapters backed by `googleapis` do not exist yet; setting
+`REPLAY_MODE=production` currently coerces to deterministic. The contract
+boundary in `packages/tool-contracts` is the swap point: the orchestrator,
+ledger, and verifier are already written against it and never import a
+fixture directly.
+**Why deferred:** with no OAuth-provisioned demo accounts available in this
+environment, production adapters would have been untestable code. Before the
+final demo video (which must show real external systems changing), implement
+the two `googleapis` adapters and a real recruiter/org endpoint, then wire
+`REPLAY_MODE=production` in `agents/dira/src/replay.ts` to select them.

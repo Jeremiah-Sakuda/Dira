@@ -49,6 +49,10 @@ export interface ActionRecord {
   policyRule: string;
   status: ActionStatus;
   attempts: number;
+  /** Which planning round authorized (or re-authorized) this intent. */
+  planId?: string;
+  /** Execution order within that plan; claims are served lowest-first. */
+  planSeq?: number;
   externalResponse?: unknown;
   failureReason?: string;
   verification?: { verifiedAtIso: string; observed: unknown };
@@ -118,10 +122,18 @@ export class ActionLedger {
     action: PlannedAction,
     policyVerdict: string,
     policyRule: string,
+    planOrder?: { planId: string; seq: number },
   ): Promise<{ record: ActionRecord; created: boolean }> {
     const key = idempotencyKey(workflowId, action);
     const existing = this.records.find((r) => r.idempotencyKey === key);
-    if (existing) return { record: structuredClone(existing), created: false };
+    if (existing) {
+      if (planOrder) {
+        existing.planId = planOrder.planId;
+        existing.planSeq = planOrder.seq;
+        await this.store.save(this.records);
+      }
+      return { record: structuredClone(existing), created: false };
+    }
 
     const record: ActionRecord = {
       actionId: `act_${this.records.length + 1}_${key.slice(0, 24).replace(/[^a-z0-9-]/gi, '')}`,
@@ -132,6 +144,8 @@ export class ActionLedger {
       policyRule,
       status: 'PLANNED',
       attempts: 0,
+      planId: planOrder?.planId,
+      planSeq: planOrder?.seq,
       history: [{ status: 'PLANNED', atIso: this.now() }],
     };
     this.records.push(record);
@@ -160,14 +174,18 @@ export class ActionLedger {
   }
 
   /**
-   * Claim the next pending action for execution (single-claimer semantics —
-   * the executor transitions PENDING_EXECUTION → EXECUTING atomically within
-   * the store's transaction boundary).
+   * Claim the next pending action for execution, in plan order (revived
+   * intents run where the *new* plan sequenced them, not where the old plan
+   * left them). NOTE: the local stores are single-process; true multi-worker
+   * claiming requires the Firestore store's transactional
+   * PENDING_EXECUTION → EXECUTING compare-and-set (see
+   * infrastructure/firestore/collections.md).
    */
   async claimNext(workflowId: string): Promise<ActionRecord | undefined> {
-    const record = this.records.find(
-      (r) => r.workflowId === workflowId && r.status === 'PENDING_EXECUTION',
-    );
+    const pending = this.records
+      .filter((r) => r.workflowId === workflowId && r.status === 'PENDING_EXECUTION')
+      .sort((a, b) => (a.planSeq ?? Number.MAX_SAFE_INTEGER) - (b.planSeq ?? Number.MAX_SAFE_INTEGER));
+    const record = pending[0];
     if (!record) return undefined;
     return this.transition(record.actionId, 'EXECUTING');
   }

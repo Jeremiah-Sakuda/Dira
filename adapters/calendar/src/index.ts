@@ -9,9 +9,9 @@ import {
  * Calendar API used by the credential-free replay (PRD §38/§46). Supports
  * chaos fault injection: transient 500s on the next N mutating calls.
  *
- * The production adapter implements the same CalendarTool contract against
- * googleapis with a narrowly scoped OAuth token (calendar.events on a single
- * demo calendar). See docs/architecture for the deployment story.
+ * The production adapter (not yet implemented — DEVIATIONS.md #13) will
+ * implement this same CalendarTool contract against googleapis with a
+ * narrowly scoped OAuth token (calendar.events on a single demo calendar).
  */
 export class FixtureCalendarTool implements CalendarTool {
   private events = new Map<string, CalendarEvent>();

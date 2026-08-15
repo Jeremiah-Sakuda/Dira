@@ -28,7 +28,7 @@ export default async function CommitmentsPage() {
         The “after” column shows where the 48-Hour Shock repair left each one.
       </p>
 
-      <div className="panel">
+      <div className="panel" style={{ overflowX: 'auto' }}>
         <table className="data">
           <thead>
             <tr>

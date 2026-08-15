@@ -86,10 +86,13 @@ export function generateCandidatePlans(input: PlannerInput): CandidatePlan[] {
   const donors =
     bindingDeadline === undefined ? [] : findCapacityDonors(state, bindingDeadline, nowMin);
 
-  // ---- Interview slot options (earliest-first, from live availability). ---
+  // ---- Interview slot options (earliest-first, from live availability;
+  // slots already in the past can never be booked). ------------------------
   const slotOptions: Record<string, LiveSlot[]> = {};
   for (const id of rebookTargets) {
-    slotOptions[id] = [...(liveSlots[id] ?? [])].sort((a, b) => a.startMin - b.startMin);
+    slotOptions[id] = [...(liveSlots[id] ?? [])]
+      .filter((s) => s.startMin >= nowMin)
+      .sort((a, b) => a.startMin - b.startMin);
   }
 
   const plans: CandidatePlan[] = [];

@@ -28,11 +28,18 @@ export async function GET(request: Request): Promise<Response> {
 
         const runPromise = runtime.orchestrator.handleEvent(fixture.trigger);
 
-        // Drain entries as they appear, paced.
+        // Drain entries as they appear, paced. Track completion without
+        // detaching the promise so a rejection is surfaced, not unhandled.
         let done = false;
-        void runPromise.finally(() => {
-          done = true;
-        });
+        let runError: unknown = null;
+        const tracked = runPromise
+          .catch((err) => {
+            runError = err;
+            return null;
+          })
+          .finally(() => {
+            done = true;
+          });
         while (!done || queue.length > 0) {
           const next = queue.shift();
           if (next) {
@@ -42,15 +49,19 @@ export async function GET(request: Request): Promise<Response> {
             await sleep(20);
           }
         }
-        const run = await runPromise;
-        send('done', {
-          status: run.status,
-          slackBeforeMin: run.slackBeforeMin,
-          slackAfterMutationMin: run.slackAfterMutationMin,
-          slackFinalMin: run.slackFinalMin,
-          failuresRecovered: run.failuresRecovered,
-          userInterventions: run.userInterventions,
-        });
+        const run = await tracked;
+        if (!run || runError) {
+          send('error', { message: String(runError ?? 'engine run failed') });
+        } else {
+          send('done', {
+            status: run.status,
+            slackBeforeMin: run.slackBeforeMin,
+            slackAfterMutationMin: run.slackAfterMutationMin,
+            slackFinalMin: run.slackFinalMin,
+            failuresRecovered: run.failuresRecovered,
+            userInterventions: run.userInterventions,
+          });
+        }
       } catch (err) {
         send('error', { message: String(err) });
       } finally {

@@ -24,13 +24,24 @@ export default async function InterventionsPage() {
             <div className="section-label" style={{ margin: 0 }}>
               Flight recorder — ECON 402, the 48-Hour Shock
             </div>
-            <StatusPill kind="good" label={run.status} />
+            <StatusPill
+              kind={run.status === 'RESOLVED' ? 'good' : run.status === 'RUNNING' ? 'accent' : 'warning'}
+              label={run.status}
+            />
           </div>
 
           <div className="tile-row">
             <Tile k="Slack before" v={fmtSlack(run.slackBeforeMin ?? 0)} />
-            <Tile k="After mutation" v={fmtSlack(run.slackAfterMutationMin ?? 0)} tone="critical" />
-            <Tile k="After repair" v={fmtSlack(run.slackFinalMin ?? 0)} tone="good" />
+            <Tile
+              k="After mutation"
+              v={fmtSlack(run.slackAfterMutationMin ?? 0)}
+              tone={(run.slackAfterMutationMin ?? 0) < 0 ? 'critical' : 'good'}
+            />
+            <Tile
+              k="After repair"
+              v={fmtSlack(run.slackFinalMin ?? 0)}
+              tone={(run.slackFinalMin ?? 0) > 0 ? 'good' : 'critical'}
+            />
             <Tile k="Replans" v={String(run.replans)} />
           </div>
 
@@ -47,7 +58,7 @@ export default async function InterventionsPage() {
           </div>
         </div>
 
-        <div className="panel">
+        <div className="panel" style={{ overflowX: 'auto' }}>
           <div className="section-label">Candidate plans — round 1</div>
           <table className="data">
             <thead>
