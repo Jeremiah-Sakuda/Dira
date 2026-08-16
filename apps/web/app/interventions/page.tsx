@@ -19,10 +19,12 @@ export default async function InterventionsPage() {
       <div className="stack">
         <LiveReplay />
 
-        <div className="panel">
+        <details className="panel reference-run">
+          <summary>Reference run evidence — ECON 402, the 48-Hour Shock</summary>
+          <div className="reference-run-content">
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, flexWrap: 'wrap', marginBottom: 6 }}>
             <div className="section-label" style={{ margin: 0 }}>
-              Flight recorder — ECON 402, the 48-Hour Shock
+              Deterministic baseline flight recorder
             </div>
             <StatusPill
               kind={run.status === 'RESOLVED' ? 'good' : run.status === 'RUNNING' ? 'accent' : 'warning'}
@@ -56,13 +58,15 @@ export default async function InterventionsPage() {
               </div>
             ))}
           </div>
-        </div>
+          </div>
+        </details>
 
         <div className="panel" style={{ overflowX: 'auto' }}>
           <div className="section-label">Candidate plans — round 1</div>
           <table className="data">
             <thead>
               <tr>
+                <th>Candidate</th>
                 <th>Plan</th>
                 <th>Cost</th>
                 <th>Restored slack</th>
@@ -72,6 +76,7 @@ export default async function InterventionsPage() {
             <tbody>
               {(run.planningRounds[0] ?? []).map((c) => (
                 <tr key={c.id}>
+                  <td className="mono">{c.id}</td>
                   <td>{c.label}</td>
                   <td className="mono">{Number.isFinite(c.costTotal) ? c.costTotal : '∞'}</td>
                   <td className="mono">{fmtSlack(c.slackMinutes)}</td>
@@ -87,8 +92,8 @@ export default async function InterventionsPage() {
             </tbody>
           </table>
           <p className="footnote" style={{ marginTop: 14 }}>
-            {metrics.verifiedExternalMutations} external mutations verified across{' '}
-            {metrics.distinctExternalSystems} systems · {metrics.policyViolations} policy
+            {metrics.verifiedExternalMutations} adapter mutations verified across{' '}
+            {metrics.distinctExternalSystems} simulated integration surfaces · {metrics.policyViolations} policy
             violations · repair derived from state, not a scenario id — see the runtime
             variation matrix in CI.
           </p>

@@ -22,14 +22,15 @@
     "test:replay": "vitest run tests/replay",
     "demo:replay": "tsx scripts/replay.ts",
     "demo:replay:20x": "tsx scripts/replay-20x.ts",
-    "demo:variations": "tsx scripts/replay.ts --matrix"
+    "demo:variations": "tsx scripts/replay.ts --matrix",
+    "eval:gemini": "tsx scripts/gemini-eval.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "fast-check": "^3.23.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "zod": "^3.24.1"

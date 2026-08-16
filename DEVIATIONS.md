@@ -1,158 +1,123 @@
-# Deviations from the PRD
+# Deviations and evidence boundaries
 
-Every place this implementation knowingly departs from the PRD, with the
-reasoning. Everything not listed here follows the PRD as written.
+This file records every deliberate departure from the product specification
+and every boundary that matters to a judge. It distinguishes implemented
+production code from deployment evidence; neither code nor prose treats a
+planned connector as a completed integration.
 
-## 1. Web deployment target: Vercel instead of Cloud Run (`dira-web`)
+## 1. Dashboard hosting: Vercel instead of Cloud Run
 
-**PRD:** §32 deploys `dira-web` to Cloud Run alongside the four services.
-**Built:** the dashboard is a Next.js app deployed with the Vercel CLI, per
-the repo owner's explicit instruction. The four backend services keep their
-Cloud Run shape (`services/*` + `infrastructure/cloud-run/Dockerfile` +
-`deploy.sh`), so the PRD topology remains deployable when a GCP project is
-provisioned.
-**Why it's safe:** the dashboard is a visibility layer (PRD §3); nothing in
-the repair loop depends on where it's hosted. The deployed demo runs the same
-engine server-side in deterministic replay mode.
+The PRD places `dira-web` on Cloud Run. The dashboard is a Next.js app hosted
+on Vercel. It is a visibility and control surface, not part of the repair
+authority. In production it proxies requests server-to-server to Cloud Run so
+the demo token never reaches the browser.
 
-## 2. No live GCP deployment in this build (Pub/Sub, Firestore, Cloud Run, Vertex)
+## 2. Google Cloud deployment — live since 2026-08-16
 
-**PRD:** §32 production stack on Google Cloud.
-**Built:** this environment has no GCP project or credentials, so the build
-centers on what the PRD itself makes the evidentiary core: the credential-free
-replay (§38), CI reliability evidence (§43), and deterministic engines.
-Pub/Sub and Firestore are represented by in-memory/file equivalents behind
-narrow interfaces (`LedgerStore`, `WorkflowStore`, event dedup by id), and the
-infrastructure directory contains the real topology (topics, collections,
-transactional boundaries, deploy script). Wiring Firestore/Pub/Sub in is an
-adapter swap, not an engine change.
-**Why it's safe:** PRD §33 already argues the storage layer is swappable; §38
-requires the system to be fully reproducible with zero Google credentials —
-that requirement is what this build proves end to end.
+The production runtime is implemented **and deployed**: project
+`dira-agentic-2026`, Cloud Run service `dira-orchestrator` (us-central1,
+dedicated service account, max-instances 1), Vertex AI Gemini 3.5 Flash via
+the global endpoint, Firestore state/ledger, and a real service-account-owned
+Google Calendar shared to the demo account. Captured evidence lives in
+[docs/evidence/](docs/evidence/): one full production run, an 8/8 live Gemini
+corpus evaluation, and 10/10 consecutive production runs each recovering the
+injected 409. `infrastructure/cloud-run/provision.sh` and `deploy.sh` are the
+exact provisioning/deployment path used.
 
-## 3. Google ADK is not integrated
+The runtime boundary stays visible in the product: the replay is labeled
+`LIVE CLOUD` only after the server can reach the configured Cloud Run status
+endpoint. Otherwise it says `DETERMINISTIC EVIDENCE` or `CLOUD UNAVAILABLE`.
+Remaining gap: Pub/Sub topics are scripted but the exercised trigger is the
+token-protected webhook (`/events` accepts the Pub/Sub push envelope, so a
+subscription is configuration, not code).
 
-**PRD:** §32 wants Google ADK as the orchestration layer with substantive
-responsibility, "not a decorative wrapper."
-**Built:** the orchestration loop is an explicit, deterministic, crash-
-resumable state machine (`agents/dira/src/orchestrator.ts`). With no GCP
-runtime available here, an ADK integration would have been exactly the
-decorative wrapper the PRD forbids — untestable glue claiming credit.
-The honest alternative was a first-class native loop with the same
-responsibilities (tool registration via `ToolSet`, structured planning calls,
-execution sequencing, recovery coordination). The ADK migration path is
-documented in `docs/architecture/README.md`.
-**Rules check:** the hackathon requires "at least one Google Agent Framework
-(ADK, GenAI SDK, Antigravity SDK, or GenKit)" — Dira uses the **GenAI SDK**
-(`@google/genai`), which satisfies the requirement without ADK.
-**Optional before submission:** if ADK specifically is desired for judging
-optics, port `DiraOrchestrator.repairLoop()` into an ADK agent with the
-engine calls as tools — the seams (interpret / plan / execute / verify are
-already discrete async calls) were designed for that port.
+## 3. Google ADK is not used
 
-## 4. Gemini runs behind a mode switch, default deterministic
+The rules accept Google ADK, GenAI SDK, Antigravity SDK, or GenKit. Dira uses
+the Google GenAI SDK. The orchestration loop is a native, deterministic,
+crash-resumable state machine. Wrapping that loop in ADK without moving real
+responsibility would be decorative; the system instead exposes explicit
+interpret, plan, execute, and verify stages that can become ADK tools later.
 
-**PRD:** §8 Gemini interprets events; §39 defines deterministic / live-model /
-production replay modes.
-**Built:** the deterministic and live-model modes of the §39 switch.
-`REPLAY_MODE=live-model` uses Gemini (`@google/genai`, `GEMINI_API_KEY` or
-Vertex ADC) with strict schema validation; the default mode uses stored
-interpretation fixtures so judges and CI need zero credentials. The live
-path is implemented but was not exercised in this environment (no API key
-present). The `production` mode value is not implemented — see #13.
+## 4. Deterministic mode is the public fallback
 
-## 5. PRD §17 per-path slack figures treated as illustrative
+`REPLAY_MODE=deterministic` uses stored interpretation and stateful
+integration simulators, allowing judges and CI to reproduce the engine with
+zero credentials. `live-model` uses Gemini with local tools. `production`
+uses Vertex AI, Firestore, Google Calendar, and controlled integration
+surfaces. The UI and documentation do not call deterministic adapter actions
+real external mutations.
 
-**PRD:** §17 lists intermediate path slacks (interview buffer +6.0h,
-sponsor +5.4h, Plan A −0.8h, …).
-**Built:** the three headline Global Slack figures are reproduced *exactly*
-(+4.1h → −3.6h → +1.3h, and §18's −216 minutes), derived by the solver from
-the fixture calendar — not asserted. Sub-path values are whatever the solver
-computes (e.g. buffer slack −1.0h post-mutation matches §17; the illustrative
-+6.0h/"Plan A −0.8h" figures do not arise from any consistent calendar that
-also yields the three headline numbers, so the derived values win). The full
-derivation is in `docs/algorithms/global-slack.md`.
+## 5. Google Calendar is real; Gmail delivery is controlled
 
-## 6. Two engine constants the PRD doesn't specify
+Production creates and manages a service-account-owned Google Calendar,
+stores Dira IDs in private extended properties, and verifies every change by
+fresh API reads. Recruiter slots/bookings and organization assignments are
+Firestore-backed controlled integrations, allowed by the hackathon's mock
+integration rule and mutable from the Cloud console.
 
-- `sessionOverheadMin = 6`: each distinct work session costs 6 minutes of
-  context switching. Makes capacity math honest (ten scattered 10-minute gaps
-  are not 100 usable minutes) and is part of the calendar arithmetic that
-  reproduces the PRD's exact slack numbers.
-- `repairSlackMarginMin = 60`: a repair must restore ≥1h of margin on the most
-  constrained *capacity* path. Prevents the planner from "repairing" onto a
-  knife edge (a cheaper plan reaching +0.3h exists in the golden state and is
-  correctly rejected). Buffer constraints satisfied at exactly their required
-  length are fully satisfied and don't trip the margin.
+Consumer Gmail sending from a service account is not claimed. Notifications
+are persisted to a Firestore `outbound_messages` collection for inspection
+and downstream delivery. Inbox provenance used by the workflow is seeded in
+Firestore. A Gmail OAuth or Workspace domain-wide-delegation connector is a
+future integration.
 
-Both are configurable and unit-tested (PRD §20 "weights should be
-configurable and unit-tested" extended to these).
+## 6. One Cloud Run service, not four empty microservices
 
-## 7. Exam duration fixed at 60 minutes
+The PRD sketches ingestor, orchestrator, executor, and verifier services. The
+deployed design uses one `dira-orchestrator` service. Those stages remain
+separate code paths behind the durable action ledger, but run in one process
+for the demo. The earlier empty service scaffolds were removed. Pub/Sub push
+envelopes are accepted by `/events`, while direct authenticated demo triggers
+are the exercised path.
 
-The PRD never states the exam's duration. 60 minutes makes the post-mutation
-buffer arithmetic produce §17's −1.0h (interview 17:00 − exam end 15:00 = 2h
-against a 3h buffer).
+## 7. PRD per-path slack numbers are illustrative
 
-## 8. Visual QA modeled as a windowed task with a delegation forcing function
+The headline trajectory is derived exactly by the solver: +4.1h before the
+mutation, −3.6h after, and +1.3h after repair. Some intermediate examples in
+the PRD cannot coexist with that same calendar. The implemented solver's
+derived values win; `docs/algorithms/global-slack.md` gives the derivation.
 
-**PRD:** §5.1 lists visual QA as delegatable with Maya as backup, and the
-golden flow delegates it.
-**Built:** QA must happen between sponsor-assets arrival (Wed 14:00) and deck
-freeze (Wed 16:00) — stored as MUST_FOLLOW/MUST_PRECEDE edges. With the exam
-at Wed 14:00–15:00 the user cannot fit the 1h session in the remaining
-window, so delegation is *forced by state*, not scripted. In the exam-at-1-PM
-variation the window survives and Dira correctly does **not** delegate —
-which is the §7 "derive the repair from current state" requirement doing its
-job.
+## 8. Two explicit solver constants
 
-## 9. Candidate-plan counts differ from the PRD's example log
+- `sessionOverheadMin = 6`: each distinct work session pays six minutes of
+  context switching.
+- `repairSlackMarginMin = 60`: a capacity repair must restore at least one
+  hour of margin rather than finish on a knife edge.
 
-**PRD:** §35 shows "3 candidate repairs evaluated"; §19 sketches Plans A/B/C.
-**Built:** the planner enumerates donor subsets, slot alternatives, and a
-policy-violating deadline-deferral exhibit — 6 candidates in round one of the
-default run (A-equivalent, B-equivalent, and four capacity variants). The
-flight recorder reports the real count. The PRD's A/B/C structure is
-recognizable in the candidate table (minimal → deferral → full repair).
+Both are configurable and unit-tested.
 
-## 10. Secondary-trigger slot choice is cost/slack-derived, not scripted
+## 9. Exam duration is 60 minutes
 
-The recruiter-withdrawal workflow (§37) offers Tue 4 PM and Fri 10 AM. Fri
-10 AM overlaps a Friday-morning study window and would burn 60+ minutes of
-pre-exam capacity, so the engine books Tue 4 PM. The Friday option appears in
-the candidate table as evaluated-and-outranked.
+The PRD does not give an exam duration. Sixty minutes produces the specified
+post-mutation recovery-buffer violation and is stored as fixture data.
 
-## 11. Demo video not recorded
+## 10. Visual QA has a window that forces delegation
 
-Recording requires a human presenter. `docs/demo/video-script.md` contains
-the full §51 script adapted to this build, with shot list and timings, plus
-the §50 runtime budget.
+Sponsor-deck QA must occur after assets arrive and before the deck freezes.
+When the exam moves into that window, the owner cannot complete it; a stored
+`DELEGATABLE_TO` edge authorizes the backup. In the earlier-exam variation,
+the window survives and delegation correctly disappears.
 
-## 12. `dira-executor` / `dira-verifier` run in-process in this build
+## 11. Candidate counts come from state
 
-**PRD:** §31 draws executor and verifier as separate services.
-**Built:** the execute and verify stages are discrete, ledger-mediated steps
-inside the orchestrator process; the standalone services exist as scaffolds
-exposing the ledger/audit surface. Splitting them onto Pub/Sub work queues is
-a deployment change (the ledger state machine — claim, EXECUTED_UNVERIFIED,
-independent verify, VERIFIED — is already the coordination protocol, and the
-crash-resume chaos test proves another worker can pick up mid-flight state).
-For hackathon scale, one process with a durable outbox is more reliable than
-four processes and a queue — and reliability is the judged property (§61).
+The default first round has six generated candidates rather than the PRD log's
+three illustrative candidates. The planner enumerates current recruiter
+slots, donor subsets, delegation options, and one deliberately policy-invalid
+deadline deferral. The flight recorder reports the actual count.
 
-## 13. Production Google Calendar/Gmail API adapters are not implemented
+## 12. Video, article, and social proof need human publication
 
-**PRD:** §30/§32 real Gmail and Google Calendar integrations; §39 a
-`REPLAY_MODE=production` using real Google services.
-**Built:** the `CalendarTool` / `GmailTool` contracts (narrow operations +
-independent verification reads, PRD §30) with stateful fixture
-implementations. Adapters backed by `googleapis` do not exist yet; setting
-`REPLAY_MODE=production` currently coerces to deterministic. The contract
-boundary in `packages/tool-contracts` is the swap point: the orchestrator,
-ledger, and verifier are already written against it and never import a
-fixture directly.
-**Why deferred:** with no OAuth-provisioned demo accounts available in this
-environment, production adapters would have been untestable code. Before the
-final demo video (which must show real external systems changing), implement
-the two `googleapis` adapters and a real recruiter/org endpoint, then wire
-`REPLAY_MODE=production` in `agents/dira/src/replay.ts` to select them.
+The repository contains a recording script, technical article draft, and
+social copy. They are not called published. Record only after the dashboard
+shows `LIVE CLOUD`, the real Calendar mutation is visible, and the Gemini
+evaluation passes. Publication and Devpost entry submission remain human
+account actions.
+
+## 13. Scope limits
+
+The fixture is one synthetic user, one week, and one timezone. Long-horizon,
+multi-user negotiation, LMS ingestion, Gmail OAuth delivery, and production
+third-party recruiter/org connectors are later work. The implemented safety
+and recovery properties are intentionally deeper than that integration
+breadth.

@@ -7,9 +7,9 @@ make your plans feasible again.**
 *One thing changes. Everything adapts.*
 
 [![ci](https://github.com/Jeremiah-Sakuda/Dira/actions/workflows/ci.yml/badge.svg)](https://github.com/Jeremiah-Sakuda/Dira/actions/workflows/ci.yml)
-&nbsp;**Live demo:** [dira-phi.vercel.app](https://dira-phi.vercel.app) — the
-engine executes server-side per request; the Interventions page streams a
-fresh live run.
+&nbsp;**Interactive evidence:** [dira-phi.vercel.app](https://dira-phi.vercel.app)
+— choose a scenario and stream a fresh run. The page labels the active
+boundary as live cloud, deterministic evidence, or unavailable.
 
 ---
 
@@ -42,8 +42,10 @@ to Wednesday 2 PM.* No one prompts Dira. It then, autonomously:
 8. **reclaims** two personal blocks, **rebuilds** the study plan on the calendar
 9. **verifies** every mutation against external state, recomputes: **+1.3h, RESOLVED**
 
-Zero user interventions. One injected failure, recovered. Four external
-systems mutated and independently verified.
+Zero user interventions. One injected failure, recovered. In deterministic
+mode four stateful adapter surfaces are mutated and independently verified;
+in production the Calendar mutations target a real Google Calendar while the
+other three remain controlled Firestore surfaces.
 
 ```
 FEASIBILITY  Global slack +4.1h → -3.6h; 3 violation(s)
@@ -86,28 +88,20 @@ make test               # unit + integration + property + chaos suites
 
 ## Architecture
 
-```
-Gmail / Calendar events
-        │
-     Pub/Sub ──► dira-ingestor (normalize, dedup)
-        │
-        ▼
- dira-orchestrator ──► Gemini (Vertex AI): interpret → strict schema gate
-        │
-        ├── propagation engine  (typed edges → impact records)
-        ├── constraint engine   (capacity, buffers, windows → Global Slack)
-        ├── planner             (candidate repairs from state)
-        ├── policy engine       (ALLOW / ALLOW_AND_NOTIFY / REQUIRE_APPROVAL / DENY)
-        ├── action ledger       (durable outbox, idempotency keys)
-        ├── executor            (scoped tool adapters, retry taxonomy)
-        └── verifier            (independent external reads → VERIFIED)
-        │
-     Firestore (commitments, edges, workflow runs, ledger, audit)
-```
+![Dira production architecture](docs/architecture/dira-production.svg)
+
+The production boundary is one honest Cloud Run service. Gemini on Vertex AI
+does semantic interpretation; deterministic engines own propagation,
+feasibility, planning, and policy; a Firestore action ledger coordinates
+execution and independent verification. Google Calendar is the real external
+mutation target. Recruiter availability, organization ownership, and outbound
+notifications are clearly labeled controlled Firestore integration surfaces.
+The Vercel dashboard proxies authenticated judge actions without exposing its
+token. [Architecture details and evidence legend](docs/architecture/README.md).
 
 Monorepo map: engines in [`packages/`](packages), the agent loop in
 [`agents/dira`](agents/dira), scoped tool adapters in [`adapters/`](adapters),
-Cloud Run services in [`services/`](services), the golden fixture in
+the Cloud Run service in [`services/`](services), the golden fixture in
 [`fixtures/`](fixtures), the dashboard in [`apps/web`](apps/web).
 
 ## The commitment model & graph
@@ -181,16 +175,16 @@ the eval corpus. More: [`docs/security/README.md`](docs/security/README.md).
 ## Local replay & modes
 
 `REPLAY_MODE=deterministic` (default) — stored interpretation fixtures, local
-adapters, zero credentials. `REPLAY_MODE=live-model` — Gemini interprets
-(`GEMINI_API_KEY`), tools stay local. The third PRD mode, `production`
-(real Google Calendar/Gmail APIs on the Cloud Run topology in
-[`infrastructure/`](infrastructure)), is a documented seam, not yet
-implemented — the `ToolSet` contract is the swap point (see
-[`DEVIATIONS.md`](DEVIATIONS.md) #13).
+stateful adapters, zero credentials. `REPLAY_MODE=live-model` — Gemini
+interprets (`GEMINI_API_KEY` or Vertex ADC), while tools stay local.
+`REPLAY_MODE=production` — Gemini on Vertex AI, Firestore persistence and
+transactional ledger, a real managed Google Calendar, and controlled
+Firestore recruiter/org/outbox surfaces. See [`.env.example`](.env.example)
+and [`infrastructure/cloud-run/`](infrastructure/cloud-run/).
 
 ## Testing & reliability evidence
 
-- 64 tests: unit, integration, **property-based invariants over randomized
+- 75 passing tests across unit, integration, **property-based invariants over randomized
   graphs** (PRD §41 — monotonicity of slack, provenance completeness, policy
   soundness, ranking soundness), and chaos.
 - `golden-replay-20x` CI job: 20 consecutive deterministic replays with the
@@ -203,12 +197,14 @@ implemented — the `ToolSet` contract is the swap point (see
 
 ## Google technologies
 
-Gemini (`@google/genai`, Vertex-ready) for interpretation in live/production
-modes; Cloud Run service topology with Dockerfile and deploy script; Pub/Sub
-topic design; Firestore data model and transactional outbox. The dashboard
-deploys via Vercel in this build — see
-[`DEVIATIONS.md`](DEVIATIONS.md) for every knowing departure from the PRD and
-its justification.
+Gemini through the Google GenAI SDK for structured interpretation; Vertex AI
+application credentials in production; one deployable Cloud Run service;
+Firestore for graph state, deduplication, workflow snapshots, controlled
+integration state, flight recordings, and transactional action-ledger claims;
+and the Google Calendar API for real mutations plus verification reads.
+Pub/Sub provisioning remains an optional ingestion path, not a claimed live
+dependency. The dashboard deploys through Vercel. See
+[`DEVIATIONS.md`](DEVIATIONS.md) for exact evidence boundaries.
 
 ## Setup
 
@@ -221,10 +217,12 @@ npm --workspace apps/web run dev   # dashboard on :3000
 
 ## Known limitations
 
-- Live Gemini interpretation is implemented but not exercised in this
-  environment (no API key); production Google Calendar/Gmail adapters are a
-  documented seam, not yet written (DEVIATIONS #13). The replay/CI evidence
-  is the reproducible core.
+- Production code is implemented but this checkout has no authorized Dira
+  Google Cloud project or active gcloud account; no live deployment or Gemini
+  evaluation artifact is claimed until those credentials are supplied.
+- Gmail delivery is a Firestore outbox rather than a consumer Gmail send.
+  Recruiter and organization systems are controlled Firestore integrations,
+  clearly labeled in the UI and architecture.
 - Feasibility computes over the whole horizon; the planner clips repairs to
   "now", but already-elapsed free time still counts toward reported slack
   until events are re-anchored — a known modeling simplification.

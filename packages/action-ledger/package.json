@@ -7,9 +7,11 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./file-store": "./src/file-store.ts"
+    "./file-store": "./src/file-store.ts",
+    "./firestore-ledger": "./src/firestore-ledger.ts"
   },
   "dependencies": {
-    "@dira/event-schema": "*"
+    "@dira/event-schema": "*",
+    "@google-cloud/firestore": "^9.0.0"
   }
 }

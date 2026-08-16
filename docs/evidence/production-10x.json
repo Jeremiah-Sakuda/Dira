@@ -1,0 +1,84 @@
+{
+ "runs": [
+  {
+   "run": 1,
+   "status": "RESOLVED",
+   "finalSlackMin": 78,
+   "verifiedMutations": 10,
+   "failuresRecovered": 1,
+   "geminiLatencyMs": 6801
+  },
+  {
+   "run": 2,
+   "status": "RESOLVED",
+   "finalSlackMin": 78,
+   "verifiedMutations": 10,
+   "failuresRecovered": 1,
+   "geminiLatencyMs": 6725
+  },
+  {
+   "run": 3,
+   "status": "RESOLVED",
+   "finalSlackMin": 78,
+   "verifiedMutations": 10,
+   "failuresRecovered": 1,
+   "geminiLatencyMs": 8174
+  },
+  {
+   "run": 4,
+   "status": "RESOLVED",
+   "finalSlackMin": 78,
+   "verifiedMutations": 10,
+   "failuresRecovered": 1,
+   "geminiLatencyMs": 7803
+  },
+  {
+   "run": 5,
+   "status": "RESOLVED",
+   "finalSlackMin": 78,
+   "verifiedMutations": 10,
+   "failuresRecovered": 1,
+   "geminiLatencyMs": 6580
+  },
+  {
+   "run": 6,
+   "status": "RESOLVED",
+   "finalSlackMin": 78,
+   "verifiedMutations": 10,
+   "failuresRecovered": 1,
+   "geminiLatencyMs": 6621
+  },
+  {
+   "run": 7,
+   "status": "RESOLVED",
+   "finalSlackMin": 78,
+   "verifiedMutations": 10,
+   "failuresRecovered": 1,
+   "geminiLatencyMs": 8471
+  },
+  {
+   "run": 8,
+   "status": "RESOLVED",
+   "finalSlackMin": 78,
+   "verifiedMutations": 10,
+   "failuresRecovered": 1,
+   "geminiLatencyMs": 6809
+  },
+  {
+   "run": 9,
+   "status": "RESOLVED",
+   "finalSlackMin": 78,
+   "verifiedMutations": 10,
+   "failuresRecovered": 1,
+   "geminiLatencyMs": 8167
+  },
+  {
+   "run": 10,
+   "status": "RESOLVED",
+   "finalSlackMin": 78,
+   "verifiedMutations": 10,
+   "failuresRecovered": 1,
+   "geminiLatencyMs": 6227
+  }
+ ]
+}

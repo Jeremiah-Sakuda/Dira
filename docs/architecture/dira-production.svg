@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" font-family="Menlo, Consolas, monospace">
+  <defs>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0 0 L9 4.5 L0 9 z" fill="#8a897f"/>
+    </marker>
+  </defs>
+  <rect width="960" height="600" fill="#141413"/>
+  <text x="34" y="44" fill="#ffffff" font-size="19" font-weight="bold" letter-spacing="3">DIRA — PRODUCTION ARCHITECTURE</text>
+  <text x="34" y="66" fill="#8a897f" font-size="11.5">solid = deployed &amp; exercised (10/10 verified runs) · dashed = documented seam</text>
+
+  <!-- Triggers -->
+  <rect x="34" y="96" width="220" height="64" rx="9" fill="#1f1f1e" stroke="#c3c2b7" stroke-width="1.4"/>
+  <text x="50" y="122" fill="#ffffff" font-size="12.5" font-weight="bold">Professor / recruiter email</text>
+  <text x="50" y="140" fill="#8a897f" font-size="10.5">controlled webhook · POST /events</text>
+
+  <rect x="34" y="176" width="220" height="52" rx="9" fill="none" stroke="#6b6a61" stroke-width="1.3" stroke-dasharray="6 5"/>
+  <text x="50" y="198" fill="#c3c2b7" font-size="11.5">Gmail watch → Pub/Sub push</text>
+  <text x="50" y="214" fill="#8a897f" font-size="10">seam: same normalized event shape</text>
+
+  <!-- Judge control -->
+  <rect x="34" y="258" width="220" height="86" rx="9" fill="#1f1f1e" stroke="#c3c2b7" stroke-width="1.4"/>
+  <text x="50" y="282" fill="#ffffff" font-size="12.5" font-weight="bold">Judge control</text>
+  <text x="50" y="300" fill="#c3c2b7" font-size="10.5">Vercel dashboard (scenarios)</text>
+  <text x="50" y="315" fill="#8a897f" font-size="10">server-side proxy holds the demo</text>
+  <text x="50" y="328" fill="#8a897f" font-size="10">token; browser never sees it</text>
+
+  <!-- Cloud Run box -->
+  <rect x="322" y="92" width="330" height="422" rx="12" fill="#1a1a19" stroke="#3987e5" stroke-width="1.8"/>
+  <text x="342" y="120" fill="#3987e5" font-size="13" font-weight="bold">CLOUD RUN · dira-orchestrator</text>
+  <text x="342" y="136" fill="#8a897f" font-size="10">dira-agentic-2026 · max-instances 1 · dedicated SA</text>
+
+  <rect x="342" y="150" width="290" height="66" rx="8" fill="#232322" stroke="#4a4a46" stroke-width="1.2"/>
+  <text x="356" y="172" fill="#ffffff" font-size="11.5" font-weight="bold">Gemini 3.5 Flash · Vertex AI</text>
+  <text x="356" y="188" fill="#c3c2b7" font-size="10">GenAI SDK · ADC, no keys · interprets ONLY</text>
+  <text x="356" y="202" fill="#8a897f" font-size="10">strict schemas · entity + sender-authority gates</text>
+
+  <rect x="342" y="228" width="290" height="92" rx="8" fill="#232322" stroke="#4a4a46" stroke-width="1.2"/>
+  <text x="356" y="250" fill="#ffffff" font-size="11.5" font-weight="bold">Deterministic engines</text>
+  <text x="356" y="267" fill="#c3c2b7" font-size="10">typed-graph propagation · Global Slack solver</text>
+  <text x="356" y="282" fill="#c3c2b7" font-size="10">candidate planner · explicit cost function</text>
+  <text x="356" y="297" fill="#c3c2b7" font-size="10">policy + provenance gate (ALLOW…DENY)</text>
+  <text x="356" y="312" fill="#8a897f" font-size="10">property-tested · model output cannot authorize</text>
+
+  <rect x="342" y="332" width="290" height="88" rx="8" fill="#232322" stroke="#4a4a46" stroke-width="1.2"/>
+  <text x="356" y="354" fill="#ffffff" font-size="11.5" font-weight="bold">Durable outbox loop</text>
+  <text x="356" y="371" fill="#c3c2b7" font-size="10">persist intent → claim (transactional) → execute</text>
+  <text x="356" y="386" fill="#c3c2b7" font-size="10">→ independent re-read → VERIFIED | replan</text>
+  <text x="356" y="401" fill="#8a897f" font-size="10">idempotency keys · crash-resume · 409 recovery</text>
+
+  <rect x="342" y="432" width="290" height="62" rx="8" fill="#232322" stroke="#4a4a46" stroke-width="1.2"/>
+  <text x="356" y="454" fill="#ffffff" font-size="11.5" font-weight="bold">Flight recorder</text>
+  <text x="356" y="470" fill="#8a897f" font-size="10">structured decisions only · streamed to dashboard</text>
+  <text x="356" y="484" fill="#8a897f" font-size="10">persisted to workflow_steps/</text>
+
+  <!-- External systems -->
+  <rect x="712" y="92" width="214" height="86" rx="9" fill="#1f1f1e" stroke="#0ca30c" stroke-width="1.6"/>
+  <text x="728" y="116" fill="#0ca30c" font-size="12.5" font-weight="bold">Google Calendar · REAL</text>
+  <text x="728" y="134" fill="#c3c2b7" font-size="10">SA-owned demo calendar,</text>
+  <text x="728" y="148" fill="#c3c2b7" font-size="10">shared to the demo account</text>
+  <text x="728" y="164" fill="#8a897f" font-size="10">move · create · delete · verify</text>
+
+  <rect x="712" y="196" width="214" height="150" rx="9" fill="#1f1f1e" stroke="#c3c2b7" stroke-width="1.4"/>
+  <text x="728" y="220" fill="#ffffff" font-size="12.5" font-weight="bold">Firestore</text>
+  <text x="728" y="238" fill="#c3c2b7" font-size="10">commitments · edges · events</text>
+  <text x="728" y="253" fill="#c3c2b7" font-size="10">workflow_runs · workflow_steps</text>
+  <text x="728" y="268" fill="#c3c2b7" font-size="10">action_ledger (transactional)</text>
+  <text x="728" y="290" fill="#fab219" font-size="10.5" font-weight="bold">controlled surfaces (labeled):</text>
+  <text x="728" y="306" fill="#8a897f" font-size="10">recruiter slots/bookings (409s)</text>
+  <text x="728" y="320" fill="#8a897f" font-size="10">org task ownership</text>
+  <text x="728" y="334" fill="#8a897f" font-size="10">notification outbox</text>
+
+  <rect x="712" y="366" width="214" height="56" rx="9" fill="none" stroke="#6b6a61" stroke-width="1.3" stroke-dasharray="6 5"/>
+  <text x="728" y="388" fill="#c3c2b7" font-size="11.5">Gmail send · real recruiter API</text>
+  <text x="728" y="404" fill="#8a897f" font-size="10">seam: same ToolSet contract</text>
+
+  <rect x="712" y="442" width="214" height="72" rx="9" fill="#1f1f1e" stroke="#c3c2b7" stroke-width="1.4"/>
+  <text x="728" y="466" fill="#ffffff" font-size="12.5" font-weight="bold">Evidence</text>
+  <text x="728" y="483" fill="#8a897f" font-size="10">structured Cloud Run logs</text>
+  <text x="728" y="497" fill="#8a897f" font-size="10">Vertex telemetry · 8/8 live eval</text>
+  <text x="728" y="511" fill="#8a897f" font-size="10">10/10 runs · CI 20/20 replay</text>
+
+  <!-- Arrows -->
+  <line x1="254" y1="128" x2="318" y2="140" stroke="#8a897f" stroke-width="1.4" marker-end="url(#arr)"/>
+  <line x1="254" y1="202" x2="318" y2="185" stroke="#6b6a61" stroke-width="1.3" stroke-dasharray="6 5" marker-end="url(#arr)"/>
+  <line x1="254" y1="300" x2="318" y2="300" stroke="#8a897f" stroke-width="1.4" marker-end="url(#arr)"/>
+  <line x1="652" y1="135" x2="708" y2="135" stroke="#0ca30c" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="652" y1="271" x2="708" y2="271" stroke="#8a897f" stroke-width="1.4" marker-end="url(#arr)"/>
+  <line x1="652" y1="470" x2="708" y2="478" stroke="#8a897f" stroke-width="1.4" marker-end="url(#arr)"/>
+
+  <text x="34" y="560" fill="#8a897f" font-size="10.5">Same engine, three runtimes (PRD §39): deterministic replay (zero credentials, CI) · live-model · production (this diagram).</text>
+  <text x="34" y="578" fill="#8a897f" font-size="10.5">Executor/verifier run in-process behind the transactional ledger; the split to worker services is a deployment change, not an engine change.</text>
+</svg>

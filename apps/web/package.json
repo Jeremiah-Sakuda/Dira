@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start"
   },
   "dependencies": {
@@ -18,7 +18,7 @@
     "@dira/policy-engine": "*",
     "@dira/propagation-engine": "*",
     "@dira/tool-contracts": "*",
-    "next": "^15.1.6",
+    "next": "^16.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

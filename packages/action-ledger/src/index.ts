@@ -68,6 +68,32 @@ export function idempotencyKey(workflowId: string, action: PlannedAction): strin
   return `${workflowId}:${action.type.toLowerCase()}:${action.target}:${desired}`;
 }
 
+/**
+ * The ledger API the orchestrator programs against. Implemented by the local
+ * ActionLedger (in-memory/file stores) and by FirestoreActionLedger
+ * (per-document records with transactional claiming) — see firestore-ledger.
+ */
+export interface LedgerApi {
+  all(): ActionRecord[] | Promise<ActionRecord[]>;
+  byWorkflow(workflowId: string): ActionRecord[];
+  get(actionId: string): ActionRecord | undefined;
+  findByIdempotencyKey(key: string): ActionRecord | undefined;
+  persistIntent(
+    workflowId: string,
+    action: PlannedAction,
+    policyVerdict: string,
+    policyRule: string,
+    planOrder?: { planId: string; seq: number },
+  ): Promise<{ record: ActionRecord; created: boolean }>;
+  transition(
+    actionId: string,
+    to: ActionStatus,
+    patch?: Partial<Pick<ActionRecord, 'externalResponse' | 'failureReason' | 'verification'>>,
+    note?: string,
+  ): Promise<ActionRecord>;
+  claimNext(workflowId: string): Promise<ActionRecord | undefined>;
+}
+
 export interface LedgerStore {
   load(): Promise<ActionRecord[]>;
   save(records: ActionRecord[]): Promise<void>;

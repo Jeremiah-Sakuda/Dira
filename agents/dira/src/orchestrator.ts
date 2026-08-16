@@ -1,7 +1,7 @@
 import {
-  ActionLedger,
   idempotencyKey,
   type ActionRecord,
+  type LedgerApi,
 } from '@dira/action-ledger';
 import {
   cloneState,
@@ -104,7 +104,7 @@ export class DiraOrchestrator {
   constructor(
     public state: DomainState,
     private readonly tools: ToolSet,
-    private readonly ledger: ActionLedger,
+    private readonly ledger: LedgerApi,
     readonly recorder: FlightRecorder,
     private readonly model: ModelClient,
     private readonly workflows: WorkflowStore = new InMemoryWorkflowStore(),
@@ -208,7 +208,13 @@ export class DiraOrchestrator {
 
     // ---- GRAPH: apply the mutation to the commitment graph ----------------
     const before = cloneState(this.state);
-    this.applyMutation(mutation, trigger);
+    try {
+      this.applyMutation(mutation, trigger);
+    } catch (err) {
+      // An unapplicable mutation must stop safely, never crash the worker.
+      this.recorder.record('ERROR', `Mutation could not be applied: ${String(err)}`);
+      return this.finish('WAITING_REVIEW', `unapplicable mutation: ${String(err)}`);
+    }
     this.recorder.record('GRAPH', `Commitment mutation persisted for "${target.title}"`);
 
     // ---- PROPAGATE --------------------------------------------------------
@@ -778,7 +784,7 @@ export interface RunMetrics {
   status: WorkflowStatus;
 }
 
-export function computeRunMetrics(run: WorkflowRun, ledger: ActionLedger): RunMetrics {
+export function computeRunMetrics(run: WorkflowRun, ledger: LedgerApi): RunMetrics {
   const verified = ledger.byWorkflow(run.id).filter((r) => r.status === 'VERIFIED');
   return {
     verifiedExternalMutations: verified.length,

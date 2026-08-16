@@ -32,9 +32,18 @@ table.
 
 ## Credentials
 
-OAuth tokens and API keys live in Secret Manager (production) or environment
-variables (local live-model mode); never in Firestore, never in the repo.
-The default replay needs no credentials at all.
+Production uses the Cloud Run service account through application default
+credentials for Vertex AI, Firestore, and Calendar; no service-account key
+file exists. The demo mutation token lives in Secret Manager. Local
+live-model mode may use `GEMINI_API_KEY` through an untracked environment
+file. The default replay needs no credential.
+
+The Vercel browser never receives the demo token. A same-origin Next.js route
+adds it on the server when proxying to Cloud Run. Production mutation and
+evaluation routes require a constant-time token match; `/runs/latest` is also
+protected. CORS is restricted to `DIRA_ALLOWED_ORIGIN`. Public `/healthz` and
+`/status` responses contain only mode/readiness/count data, never the Calendar
+ID, token, or raw workflow content.
 
 ## Auditability (PRD §48)
 

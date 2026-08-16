@@ -6,27 +6,30 @@ The local replay uses file/in-memory stores behind the same interfaces
 (`LedgerStore`, `WorkflowStore`) — swapping in Firestore is an adapter change,
 not an engine change.
 
-| Collection            | Contents                                                       |
-| --------------------- | -------------------------------------------------------------- |
-| `users/`              | user profile, autonomy preferences                             |
-| `commitments/`        | commitment documents (PRD §9 fields)                           |
-| `commitment_edges/`   | typed edges: `{type, from, to, data}`                          |
-| `constraints/`        | named constraints (e.g. POST_EXAM_RECOVERY_BUFFER)             |
-| `events/`             | normalized external events, keyed by eventId (dedup)           |
-| `workflow_runs/`      | one document per repair workflow (status, slack, candidates)   |
-| `workflow_steps/`     | flight-recorder entries, subcollection per run                 |
-| `action_ledger/`      | outbox rows with idempotency keys and status history           |
-| `observations/`       | verifier reads of external state                               |
-| `policies/`           | autonomy policy configuration                                  |
-| `audit_events/`       | every mutation with provenance (PRD §48)                       |
+| Collection | Implemented contents |
+| --- | --- |
+| `dira_meta/` | graph configuration and managed Calendar ID |
+| `commitments/` | commitment documents |
+| `commitment_edges/` | typed dependency edges |
+| `events/` | normalized events keyed by event ID for deduplication |
+| `workflow_runs/` | repair snapshots, candidates, counters, update time |
+| `workflow_steps/` | persisted flight-recorder entries per run |
+| `action_ledger/` | idempotent intents, lifecycle, attempts, policy evidence |
+| `gmail_inbox/` | controlled source-message provenance |
+| `outbound_messages/` | controlled notification outbox; not claimed as Gmail delivery |
+| `recruiter_slots/*/slots/` | console-mutable controlled availability |
+| `recruiter_bookings/`, `recruiter_confirmed/` | idempotent controlled booking state |
+| `org_tasks/` | controlled organization task ownership |
 
 Transactional boundaries:
 
-- Workflow transition to EXECUTING + persisting authorized actions +
-  PENDING_EXECUTION happen in **one transaction** (outbox pattern, PRD §25).
-- Executors claim actions with a transactional
+- Ledger records are persisted and transitioned transactionally.
+- Workers claim actions with a transactional
   `PENDING_EXECUTION → EXECUTING` compare-and-set, so two replicas can never
   double-claim.
+- Recruiter booking uses a Firestore transaction to re-check availability,
+  reserve the slot, and record the booking together.
 
-Security rules: no client writes; services use scoped service accounts; raw
-OAuth secrets live in Secret Manager, never in Firestore (PRD §47).
+Security boundary: no browser writes. Cloud Run uses a dedicated service
+account; the dashboard's demo token lives in Secret Manager and is sent only
+by the server-side proxy. Application default credentials replace key files.

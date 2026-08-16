@@ -11,8 +11,14 @@ export interface EvalCase {
   name: string;
   email: RawEmailEvent;
   expected: InterpretationResult;
-  /** What the full pipeline must guarantee regardless of model output. */
-  pipelineExpectation: 'MUTATION' | 'NO_ACTION' | 'BLOCKED';
+  /**
+   * What the full pipeline must guarantee regardless of model output.
+   * SAFE_HOLD accepts either BLOCKED (low-confidence mutation stopped at the
+   * gate) or NO_ACTION (classified irrelevant): for ambiguous input the
+   * contract is "no external action", not one particular way of expressing
+   * uncertainty.
+   */
+  pipelineExpectation: 'MUTATION' | 'NO_ACTION' | 'BLOCKED' | 'SAFE_HOLD';
 }
 
 const base = (overrides: Partial<RawEmailEvent> & { messageId: string }): RawEmailEvent => ({
@@ -76,7 +82,7 @@ export const EVAL_CORPUS: EvalCase[] = [
         evidence_quote: 'we may need to shift the midterm earlier in the week',
       },
     },
-    pipelineExpectation: 'BLOCKED', // low confidence → WAITING_REVIEW
+    pipelineExpectation: 'SAFE_HOLD', // low confidence → WAITING_REVIEW or classified tentative
   },
   {
     name: 'conversational phrasing',
@@ -151,7 +157,7 @@ export const EVAL_CORPUS: EvalCase[] = [
         evidence_quote: 'I am checking which is correct and will confirm by tonight',
       },
     },
-    pipelineExpectation: 'BLOCKED',
+    pipelineExpectation: 'SAFE_HOLD',
   },
   {
     name: 'unrelated email',

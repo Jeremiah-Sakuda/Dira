@@ -22,6 +22,7 @@ export default async function GraphPage() {
   const title = (id: string) => nodes.find((n) => n.id === id)?.title ?? id;
 
   const drawable = edges.filter((e) => pos.has(e.from) && pos.has(e.to));
+  const externalEdges = edges.filter((e) => pos.has(e.from) && !pos.has(e.to));
 
   return (
     <main>
@@ -39,22 +40,33 @@ export default async function GraphPage() {
           role="img"
           aria-label="Typed commitment graph across academic, career, organization and personal domains"
         >
+          <defs>
+            <marker id="edge-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+              <path d="M 0 0 L 8 4 L 0 8 z" fill="var(--text-muted)" />
+            </marker>
+          </defs>
           {Object.entries(colX).map(([domain, x]) => (
             <text key={domain} x={x} y={40} textAnchor="middle" fontSize="11" letterSpacing="2"
               fill="var(--text-muted)" fontFamily="var(--mono)">
               {domain.toUpperCase()}
             </text>
           ))}
-          {drawable.map((e) => {
+          {drawable.map((e, index) => {
             const a = pos.get(e.from)!;
             const b = pos.get(e.to)!;
-            const midX = (a.x + b.x) / 2;
-            const midY = (a.y + b.y) / 2 - 14;
+            const sameColumn = a.x === b.x;
+            const controlX = sameColumn
+              ? a.x + (index % 2 === 0 ? 74 : -74)
+              : (a.x + b.x) / 2;
+            const midX = sameColumn ? controlX : (a.x + b.x) / 2;
+            const midY = (a.y + b.y) / 2 - 10;
+            const path = `M ${a.x} ${a.y} C ${controlX} ${a.y}, ${controlX} ${b.y}, ${b.x} ${b.y}`;
             return (
               <g key={e.id}>
-                <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="var(--border)" strokeWidth="1.4" />
-                <text x={midX} y={midY} textAnchor="middle" fontSize="9" fill="var(--text-muted)" fontFamily="var(--mono)">
-                  {e.type}
+                <path d={path} fill="none" stroke="var(--text-muted)" strokeOpacity="0.65" strokeWidth="1.3" markerEnd="url(#edge-arrow)" />
+                <circle cx={midX} cy={midY - 3} r={9} fill="var(--surface-0)" stroke="var(--text-muted)" />
+                <text x={midX} y={midY} textAnchor="middle" fontSize="8.5" fill="var(--text-secondary)" fontFamily="var(--mono)">
+                  {index + 1}
                 </text>
               </g>
             );
@@ -84,6 +96,23 @@ export default async function GraphPage() {
             );
           })}
         </svg>
+        <div className="edge-legend" aria-label="Graph edge legend">
+          {drawable.map((edge, index) => (
+            <div className="edge-legend-row" key={edge.id}>
+              <span className="edge-number">{index + 1}</span>
+              <span>
+                <strong>{edge.type}</strong>
+                <span className="muted"> {title(edge.from)} → {title(edge.to)}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+        {externalEdges.length > 0 && (
+          <p className="footnote" style={{ marginTop: 16 }}>
+            External-target edges not plotted as commitment nodes:{' '}
+            {externalEdges.map((edge) => `${edge.type} (${title(edge.from)} → ${edge.to})`).join(' · ')}.
+          </p>
+        )}
       </div>
     </main>
   );

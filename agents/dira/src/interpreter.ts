@@ -1,4 +1,4 @@
-import type { DomainState } from '@dira/commitment-model';
+import { minutesToIso, type DomainState } from '@dira/commitment-model';
 import {
   InterpretationResultSchema,
   type InterpretationResult,
@@ -42,19 +42,33 @@ export class FixtureModelClient implements ModelClient {
 }
 
 /**
- * Live Gemini client. Loaded lazily so the credential-free replay never needs
- * the dependency or an API key. Uses GEMINI_API_KEY (Google AI Studio) or
- * Vertex AI application-default credentials when deployed.
+ * Live Gemini client (GenAI SDK). Loaded lazily so the credential-free
+ * replay never needs the dependency or credentials. Two auth paths:
+ *  - GEMINI_API_KEY (Google AI Studio) for local live-model runs;
+ *  - Vertex AI via application-default credentials when
+ *    GOOGLE_GENAI_USE_VERTEXAI=true (the Cloud Run deployment: the service
+ *    account carries roles/aiplatform.user, no key material anywhere).
  */
 export class GeminiModelClient implements ModelClient {
   name = 'gemini';
+  /** Telemetry from the most recent call, surfaced in eval artifacts. */
+  lastCall?: { model: string; latencyMs: number; vertexai: boolean };
+
   // Hackathon rules require Gemini 3.5+; override with DIRA_GEMINI_MODEL.
   constructor(private readonly model = process.env.DIRA_GEMINI_MODEL ?? 'gemini-3.5-flash') {}
 
   async interpret(email: RawEmailEvent, context: InterpretationContext): Promise<unknown> {
     const { GoogleGenAI } = await import('@google/genai');
-    const ai = new GoogleGenAI({});
+    const vertexai = process.env.GOOGLE_GENAI_USE_VERTEXAI === 'true';
+    const ai = vertexai
+      ? new GoogleGenAI({
+          vertexai: true,
+          project: process.env.GOOGLE_CLOUD_PROJECT,
+          location: process.env.GOOGLE_CLOUD_LOCATION ?? 'us-central1',
+        })
+      : new GoogleGenAI({});
     const prompt = buildInterpretationPrompt(email, context);
+    const startedAt = Date.now();
     const response = await ai.models.generateContent({
       model: this.model,
       contents: prompt,
@@ -63,6 +77,7 @@ export class GeminiModelClient implements ModelClient {
         temperature: 0,
       },
     });
+    this.lastCall = { model: this.model, latencyMs: Date.now() - startedAt, vertexai };
     const text = response.text ?? '';
     try {
       return JSON.parse(text);
@@ -84,6 +99,12 @@ export function buildInterpretationPrompt(
     '',
     'Known commitments (the only legal entity_id values):',
     ...context.commitments.map((c) => `- ${c.id}: ${c.title}${c.startIso ? ` @ ${c.startIso}` : ''}`),
+    '',
+    `The email arrived at ${email.receivedAtIso}. Resolve relative phrases`,
+    '("this Wednesday", "Friday") against that date and the commitment times',
+    'above, and emit full ISO 8601 timestamps INCLUDING the same UTC offset',
+    'the commitment times use. schedule_change and deadline_change MUST',
+    'include new_start; offer_of_alternatives MUST include offered_alternatives.',
     '',
     'Respond with ONLY a JSON object of shape:',
     '{"relevant": boolean, "reason": string, "mutation": null | {',
@@ -123,13 +144,20 @@ export async function interpretEmail(
   state: DomainState,
   maxAttempts = 2,
 ): Promise<InterpretOutcome> {
+  // The model needs date anchors to resolve phrases like "this Wednesday":
+  // give it each commitment's current scheduled time or deadline.
   const context: InterpretationContext = {
     commitments: Object.values(state.commitments)
       .filter((c) => !c.reservesEffortFor)
       .map((c) => ({
         id: c.id,
         title: c.title,
-        startIso: undefined,
+        startIso:
+          c.startMin !== undefined
+            ? minutesToIso(c.startMin, state.horizonStartIso)
+            : c.deadlineMin !== undefined
+              ? `due ${minutesToIso(c.deadlineMin, state.horizonStartIso)}`
+              : undefined,
       })),
   };
 

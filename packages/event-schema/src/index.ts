@@ -47,7 +47,25 @@ export const InterpretedMutationSchema = z
     confidence: z.number().min(0).max(1),
     evidence_quote: z.string().optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((m, ctx) => {
+    // A mutation the executor cannot apply is malformed, whatever the model
+    // says: reschedules need the new time; offers need the alternatives.
+    if ((m.mutation_type === 'schedule_change' || m.mutation_type === 'deadline_change') && !m.new_start) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `${m.mutation_type} requires new_start`,
+        path: ['new_start'],
+      });
+    }
+    if (m.mutation_type === 'offer_of_alternatives' && !(m.offered_alternatives?.length)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'offer_of_alternatives requires offered_alternatives',
+        path: ['offered_alternatives'],
+      });
+    }
+  });
 export type InterpretedMutation = z.infer<typeof InterpretedMutationSchema>;
 
 /** Classification wrapper: not every email is a mutation. */

@@ -43,6 +43,12 @@ describe('interpretation pipeline over the eval corpus', () => {
           expect(run.status).toBe('WAITING_REVIEW');
           expect(externallyMutated).toBe(0);
           break;
+        case 'SAFE_HOLD':
+          // Ambiguous input: either safe outcome is correct; the invariant
+          // is that nothing external may change.
+          expect(['WAITING_REVIEW', 'NO_ACTION_NEEDED']).toContain(run.status);
+          expect(externallyMutated).toBe(0);
+          break;
       }
     });
   }

@@ -25,7 +25,7 @@ export default async function CommitmentsPage() {
       <p className="page-sub">
         Not tasks — commitments: outcomes with time requirements, dependencies,
         stakeholders, flexibility, and policies governing how Dira may alter them.
-        The “after” column shows where the 48-Hour Shock repair left each one.
+        The “after” column shows where the deterministic 48-Hour Shock reference repair left each one.
       </p>
 
       <div className="panel" style={{ overflowX: 'auto' }}>

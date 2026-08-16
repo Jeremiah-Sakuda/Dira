@@ -1,16 +1,61 @@
 import { buildReplayRuntime } from '@dira/agent';
 import { buildGoldenFixture } from '@dira/fixtures/golden';
+import { getDemoScenario } from '../../../../lib/demo-scenarios';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * Live replay stream: executes a fresh golden workflow run in this process
- * and streams each flight-recorder entry as a server-sent event. What the
- * client watches is a real engine execution, paced for the human eye.
+ * Server-side replay proxy. When the Cloud Run URL and demo token are
+ * configured, the browser receives the real production stream without ever
+ * seeing the credential. Otherwise it runs the same engine locally against
+ * deterministic, stateful integration simulators.
  */
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const paceMs = Math.min(1200, Math.max(0, Number(url.searchParams.get('pace') ?? 320)));
+  const scenario = getDemoScenario(url.searchParams.get('scenario'));
+  const cloudUrl = process.env.DIRA_CLOUD_RUN_URL?.replace(/\/$/, '');
+  const demoToken = process.env.DIRA_DEMO_TOKEN;
+
+  if (cloudUrl && demoToken) {
+    const authHeaders = {
+      'content-type': 'application/json',
+      'x-dira-demo-token': demoToken,
+    };
+    const reset = await fetch(`${cloudUrl}/demo/reset`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify(scenario.variation),
+      cache: 'no-store',
+    });
+    if (!reset.ok) {
+      return Response.json(
+        { error: `Cloud reset failed (${reset.status})` },
+        { status: 502 },
+      );
+    }
+
+    const examHour = scenario.variation.examHour ?? 14;
+    const upstream = await fetch(`${cloudUrl}/demo/stream?examHour=${examHour}`, {
+      headers: { 'x-dira-demo-token': demoToken },
+      cache: 'no-store',
+    });
+    if (!upstream.ok || !upstream.body) {
+      return Response.json(
+        { error: `Cloud replay failed (${upstream.status})` },
+        { status: 502 },
+      );
+    }
+
+    return new Response(upstream.body, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache, no-transform',
+        Connection: 'keep-alive',
+        'X-Dira-Runtime': 'production',
+      },
+    });
+  }
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
@@ -21,7 +66,7 @@ export async function GET(request: Request): Promise<Response> {
       const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
       try {
-        const fixture = buildGoldenFixture();
+        const fixture = buildGoldenFixture(scenario.variation);
         const runtime = await buildReplayRuntime(fixture);
         const queue: unknown[] = [];
         runtime.recorder.onEntry((entry) => queue.push(entry));
@@ -60,6 +105,7 @@ export async function GET(request: Request): Promise<Response> {
             slackFinalMin: run.slackFinalMin,
             failuresRecovered: run.failuresRecovered,
             userInterventions: run.userInterventions,
+            runtime: 'deterministic',
           });
         }
       } catch (err) {
@@ -75,6 +121,7 @@ export async function GET(request: Request): Promise<Response> {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
       Connection: 'keep-alive',
+      'X-Dira-Runtime': 'deterministic',
     },
   });
 }

@@ -8,6 +8,9 @@ export const dynamic = 'force-dynamic';
 export default async function SystemPage() {
   const data = await getGoldenRunData();
   const { run, metrics } = data;
+  const productionConfigured = Boolean(
+    process.env.DIRA_CLOUD_RUN_URL && process.env.DIRA_DEMO_TOKEN,
+  );
   const feasible = run.status === 'RESOLVED';
   const commitmentCount = data.commitmentsAfter.filter(
     (c) => !c.reservesEffortFor && c.status !== 'DROPPED',
@@ -18,7 +21,7 @@ export default async function SystemPage() {
     <main>
       <div className="hero">
         <div className="panel system-state">
-          <div className="section-label">System</div>
+          <div className="section-label">Reference system state</div>
           <div className="system-word" style={{ color: feasible ? 'var(--status-good)' : 'var(--status-critical)' }}>
             {feasible ? 'FEASIBLE' : 'AT RISK'}
           </div>
@@ -30,9 +33,9 @@ export default async function SystemPage() {
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
             Dira monitors commitments across school, career, organizations and personal
-            life; when the outside world moves, it repairs the consequences. This page is
-            rendered from a live run of the engine — the 48-Hour Shock executed inside
-            this server process, injected failure included.
+            life; when the outside world moves, it repairs the consequences. This overview
+            is rendered from a fresh deterministic engine run. Open Interventions to choose
+            a scenario and see whether the production cloud runtime is connected.
           </p>
         </div>
 
@@ -57,7 +60,7 @@ export default async function SystemPage() {
         </div>
         <div className="tile-row" style={{ margin: '16px 0 4px' }}>
           <Tile k="Commitments affected" v={String(run.affected.length)} />
-          <Tile k="Verified external mutations" v={String(metrics.verifiedExternalMutations)} />
+          <Tile k="Verified adapter mutations" v={String(metrics.verifiedExternalMutations)} />
           <Tile k="Failures recovered" v={String(metrics.failuresRecovered)} />
           <Tile k="User interventions" v={String(metrics.userInterventions)} tone="good" />
         </div>
@@ -73,10 +76,11 @@ export default async function SystemPage() {
       </div>
 
       <p className="footnote">
-        Deployment note: this demo instance runs the deterministic, credential-free replay
-        (REPLAY_MODE=deterministic) — the same engine, adapters and ledger as the cloud
-        deployment, with fixture tools standing in for Gmail, Calendar and the recruiter
-        endpoint. Reproduce it locally with <span className="mono">make demo-replay</span>.
+        Runtime note: this overview is always the reproducible deterministic reference.
+        {productionConfigured
+          ? ' The judge-controlled replay is connected server-to-server to Cloud Run, Vertex AI, Firestore, and Google Calendar.'
+          : ' The judge-controlled replay currently uses stateful integration simulators; production credentials are not configured for this web deployment.'}{' '}
+        Reproduce the reference with <span className="mono">make demo-replay</span>.
       </p>
     </main>
   );

@@ -1,0 +1,1317 @@
+{
+ "run": {
+  "id": "wf-evt-gmail-econ-move-1",
+  "eventId": "evt-gmail-econ-move-1",
+  "status": "RESOLVED",
+  "impacts": [
+   {
+    "source_commitment": "econ402-midterm-2",
+    "affected_commitment": "sponsor-visual-qa",
+    "edge_type": "CONFLICTS_WITH",
+    "constraint": "no temporal overlap",
+    "previous_status": "SATISFIED",
+    "new_status": "VIOLATED",
+    "detail": "ECON 402 Midterm 2 now overlaps the planned session for Sponsor deck visual QA"
+   },
+   {
+    "source_commitment": "econ402-midterm-2",
+    "affected_commitment": "econ402-midterm-2-prep",
+    "edge_type": "REQUIRES_PREPARATION",
+    "constraint": "preparation must complete before the prepared event",
+    "previous_status": "SATISFIED",
+    "new_status": "VIOLATED",
+    "detail": "prep deadline 5160 \u2192 2280; 5 scheduled prep block(s) now sit after the deadline"
+   },
+   {
+    "source_commitment": "econ402-midterm-2",
+    "affected_commitment": "technical-interview-1",
+    "edge_type": "REQUIRES_BUFFER",
+    "constraint": "180 min buffer (POST_EXAM_RECOVERY_BUFFER)",
+    "previous_status": "NOT_APPLICABLE",
+    "new_status": "VIOLATED",
+    "detail": "ECON 402 Midterm 2 \u2192 TechCorp technical interview"
+   },
+   {
+    "source_commitment": "sponsor-visual-qa",
+    "affected_commitment": "sponsor-deck-freeze",
+    "edge_type": "DEPENDS_ON",
+    "constraint": "prerequisite must complete first",
+    "previous_status": "SATISFIED",
+    "new_status": "VIOLATED",
+    "detail": "Sponsor deck freeze depends on Sponsor deck visual QA"
+   },
+   {
+    "source_commitment": "sponsor-visual-qa",
+    "affected_commitment": "sponsor-visual-qa",
+    "edge_type": "MUST_FOLLOW",
+    "constraint": "execution window",
+    "previous_status": "SATISFIED",
+    "new_status": "VIOLATED",
+    "detail": "Sponsor deck visual QA window feasibility for owner \"user-sam\""
+   },
+   {
+    "source_commitment": "sponsor-visual-qa",
+    "affected_commitment": "sponsor-visual-qa",
+    "edge_type": "MUST_PRECEDE",
+    "constraint": "execution window",
+    "previous_status": "SATISFIED",
+    "new_status": "VIOLATED",
+    "detail": "Sponsor deck visual QA window feasibility for owner \"user-sam\""
+   },
+   {
+    "source_commitment": "sponsor-visual-qa",
+    "affected_commitment": "sponsor-deck-freeze",
+    "edge_type": "MUST_PRECEDE",
+    "constraint": "ordering input at risk",
+    "previous_status": "SATISFIED",
+    "new_status": "VIOLATED",
+    "detail": "Sponsor deck freeze consumes the output of Sponsor deck visual QA"
+   },
+   {
+    "source_commitment": "econ402-midterm-2-prep",
+    "affected_commitment": "problem-set-6",
+    "edge_type": "SHARES_RESOURCE_WITH",
+    "constraint": "shared resource: user-time",
+    "previous_status": "SATISFIED",
+    "new_status": "SATISFIED",
+    "detail": "capacity-path slack 483 min \u2192 123 min"
+   },
+   {
+    "source_commitment": "econ402-midterm-2",
+    "affected_commitment": "technical-interview-1",
+    "edge_type": "REQUIRES_BUFFER",
+    "constraint": "180 min buffer (POST_EXAM_RECOVERY_BUFFER)",
+    "previous_status": "NOT_APPLICABLE",
+    "new_status": "VIOLATED",
+    "detail": "ECON 402 Midterm 2 \u2192 TechCorp technical interview"
+   },
+   {
+    "source_commitment": "sponsor-deck-freeze",
+    "affected_commitment": "sponsor-presentation",
+    "edge_type": "DEPENDS_ON",
+    "constraint": "prerequisite must complete first",
+    "previous_status": "SATISFIED",
+    "new_status": "VIOLATED",
+    "detail": "Sponsor presentation (CS Club) depends on Sponsor deck freeze"
+   },
+   {
+    "source_commitment": "sponsor-deck-freeze",
+    "affected_commitment": "sponsor-visual-qa",
+    "edge_type": "MUST_PRECEDE",
+    "constraint": "execution window boundary moved",
+    "previous_status": "SATISFIED",
+    "new_status": "VIOLATED",
+    "detail": "Sponsor deck freeze bounds the window of Sponsor deck visual QA"
+   },
+   {
+    "source_commitment": "problem-set-6",
+    "affected_commitment": "econ402-midterm-2-prep",
+    "edge_type": "SHARES_RESOURCE_WITH",
+    "constraint": "shared resource: user-time",
+    "previous_status": "SATISFIED",
+    "new_status": "VIOLATED",
+    "detail": "capacity-path slack 246 min \u2192 -216 min"
+   }
+  ],
+  "affected": [
+   "sponsor-visual-qa",
+   "econ402-midterm-2-prep",
+   "technical-interview-1",
+   "sponsor-deck-freeze",
+   "problem-set-6",
+   "sponsor-presentation"
+  ],
+  "planningRounds": [
+   [
+    {
+     "id": "plan-0-s3480",
+     "label": "rebook interview + delegate QA + rebuild study plan",
+     "acceptable": false,
+     "autonomous": true,
+     "costTotal": 295,
+     "slackMinutes": -216,
+     "rejectionReason": "hard constraint violated: INSUFFICIENT_PREP_CAPACITY",
+     "actionCount": 9
+    },
+    {
+     "id": "plan-1-s3480",
+     "label": "rebook interview + delegate QA + move workout + rebuild study plan",
+     "acceptable": false,
+     "autonomous": true,
+     "costTotal": 325,
+     "slackMinutes": -156,
+     "rejectionReason": "hard constraint violated: INSUFFICIENT_PREP_CAPACITY",
+     "actionCount": 10
+    },
+    {
+     "id": "plan-2-s3480",
+     "label": "rebook interview + delegate QA + move side-project build block + rebuild study plan",
+     "acceptable": false,
+     "autonomous": true,
+     "costTotal": 330,
+     "slackMinutes": 18,
+     "rejectionReason": "insufficient repair margin: 18 min < 60 min required",
+     "actionCount": 11
+    },
+    {
+     "id": "plan-3-s3480",
+     "label": "rebook interview + delegate QA + move workout + move side-project build block + rebuild study plan",
+     "acceptable": true,
+     "autonomous": true,
+     "costTotal": 360,
+     "slackMinutes": 78,
+     "actionCount": 12
+    },
+    {
+     "id": "plan-4-alt1",
+     "label": "rebook interview + delegate QA + move workout + move side-project build block + rebuild study plan",
+     "acceptable": true,
+     "autonomous": true,
+     "costTotal": 360,
+     "slackMinutes": 78,
+     "actionCount": 12
+    },
+    {
+     "id": "plan-defer-deliverable",
+     "label": "rebook interview + defer deliverable + rebuild study plan",
+     "acceptable": false,
+     "autonomous": false,
+     "costTotal": 770,
+     "slackMinutes": -216,
+     "rejectionReason": "policy: Sponsor deck freeze is FIXED",
+     "actionCount": 9
+    }
+   ],
+   [
+    {
+     "id": "plan-0-s3660",
+     "label": "rebook interview + delegate QA + rebuild study plan",
+     "acceptable": false,
+     "autonomous": true,
+     "costTotal": 295,
+     "slackMinutes": -216,
+     "rejectionReason": "hard constraint violated: INSUFFICIENT_PREP_CAPACITY",
+     "actionCount": 9
+    },
+    {
+     "id": "plan-1-s3660",
+     "label": "rebook interview + delegate QA + move workout + rebuild study plan",
+     "acceptable": false,
+     "autonomous": true,
+     "costTotal": 325,
+     "slackMinutes": -156,
+     "rejectionReason": "hard constraint violated: INSUFFICIENT_PREP_CAPACITY",
+     "actionCount": 10
+    },
+    {
+     "id": "plan-2-s3660",
+     "label": "rebook interview + delegate QA + move side-project build block + rebuild study plan",
+     "acceptable": false,
+     "autonomous": true,
+     "costTotal": 330,
+     "slackMinutes": 18,
+     "rejectionReason": "insufficient repair margin: 18 min < 60 min required",
+     "actionCount": 11
+    },
+    {
+     "id": "plan-3-s3660",
+     "label": "rebook interview + delegate QA + move workout + move side-project build block + rebuild study plan",
+     "acceptable": true,
+     "autonomous": true,
+     "costTotal": 360,
+     "slackMinutes": 78,
+     "actionCount": 12
+    },
+    {
+     "id": "plan-defer-deliverable",
+     "label": "rebook interview + defer deliverable + rebuild study plan",
+     "acceptable": false,
+     "autonomous": false,
+     "costTotal": 770,
+     "slackMinutes": -216,
+     "rejectionReason": "policy: Sponsor deck freeze is FIXED",
+     "actionCount": 9
+    }
+   ]
+  ],
+  "selectedPlanIds": [
+   "plan-3-s3480",
+   "plan-3-s3660"
+  ],
+  "failuresRecovered": 1,
+  "replans": 1,
+  "userInterventions": 0,
+  "mutation": {
+   "entity_type": "commitment",
+   "entity_id": "econ402-midterm-2",
+   "mutation_type": "schedule_change",
+   "old_start": "2026-08-21T14:00:00-05:00",
+   "new_start": "2026-08-19T14:00:00-05:00",
+   "unchanged_constraints": [
+    "exam room"
+   ],
+   "confidence": 1,
+   "evidence_quote": "Midterm 2 will be held this Wednesday at 2:00 PM instead of Friday at 2:00 PM."
+  },
+  "mutationSummary": "\"ECON 402 Midterm 2\" moved 2026-08-21T14:00:00-05:00 \u2192 2026-08-19T14:00:00-05:00",
+  "slackBeforeMin": 246,
+  "slackAfterMutationMin": -216,
+  "slackFinalMin": 78
+ },
+ "metrics": {
+  "verifiedExternalMutations": 10,
+  "distinctExternalSystems": 4,
+  "failuresRecovered": 1,
+  "policyViolations": 0,
+  "userInterventions": 0,
+  "finalSlackMin": 78,
+  "status": "RESOLVED"
+ },
+ "flight": [
+  {
+   "seq": 1,
+   "atIso": "2026-08-16T15:56:55.929Z",
+   "phase": "EVENT",
+   "message": "gmail message received: \"ECON 402 \u2014 Midterm 2 schedule change\"",
+   "data": {
+    "eventId": "evt-gmail-econ-move-1",
+    "from": "elena.chen@university.demo"
+   }
+  },
+  {
+   "seq": 2,
+   "atIso": "2026-08-16T15:57:05.921Z",
+   "phase": "INTERPRET",
+   "message": "\"ECON 402 Midterm 2\" moved 2026-08-21T14:00:00-05:00 \u2192 2026-08-19T14:00:00-05:00",
+   "data": {
+    "mutation": {
+     "entity_type": "commitment",
+     "entity_id": "econ402-midterm-2",
+     "mutation_type": "schedule_change",
+     "old_start": "2026-08-21T14:00:00-05:00",
+     "new_start": "2026-08-19T14:00:00-05:00",
+     "unchanged_constraints": [
+      "exam room"
+     ],
+     "confidence": 1,
+     "evidence_quote": "Midterm 2 will be held this Wednesday at 2:00 PM instead of Friday at 2:00 PM."
+    },
+    "modelClient": "gemini",
+    "attempts": 1
+   }
+  },
+  {
+   "seq": 3,
+   "atIso": "2026-08-16T15:57:05.922Z",
+   "phase": "GRAPH",
+   "message": "Commitment mutation persisted for \"ECON 402 Midterm 2\""
+  },
+  {
+   "seq": 4,
+   "atIso": "2026-08-16T15:57:05.975Z",
+   "phase": "PROPAGATE",
+   "message": "6 commitments affected via 12 typed-edge impacts",
+   "data": {
+    "affected": [
+     "sponsor-visual-qa",
+     "econ402-midterm-2-prep",
+     "technical-interview-1",
+     "sponsor-deck-freeze",
+     "problem-set-6",
+     "sponsor-presentation"
+    ],
+    "impacts": [
+     {
+      "source_commitment": "econ402-midterm-2",
+      "affected_commitment": "sponsor-visual-qa",
+      "edge_type": "CONFLICTS_WITH",
+      "constraint": "no temporal overlap",
+      "previous_status": "SATISFIED",
+      "new_status": "VIOLATED",
+      "detail": "ECON 402 Midterm 2 now overlaps the planned session for Sponsor deck visual QA"
+     },
+     {
+      "source_commitment": "econ402-midterm-2",
+      "affected_commitment": "econ402-midterm-2-prep",
+      "edge_type": "REQUIRES_PREPARATION",
+      "constraint": "preparation must complete before the prepared event",
+      "previous_status": "SATISFIED",
+      "new_status": "VIOLATED",
+      "detail": "prep deadline 5160 \u2192 2280; 5 scheduled prep block(s) now sit after the deadline"
+     },
+     {
+      "source_commitment": "econ402-midterm-2",
+      "affected_commitment": "technical-interview-1",
+      "edge_type": "REQUIRES_BUFFER",
+      "constraint": "180 min buffer (POST_EXAM_RECOVERY_BUFFER)",
+      "previous_status": "NOT_APPLICABLE",
+      "new_status": "VIOLATED",
+      "detail": "ECON 402 Midterm 2 \u2192 TechCorp technical interview"
+     },
+     {
+      "source_commitment": "sponsor-visual-qa",
+      "affected_commitment": "sponsor-deck-freeze",
+      "edge_type": "DEPENDS_ON",
+      "constraint": "prerequisite must complete first",
+      "previous_status": "SATISFIED",
+      "new_status": "VIOLATED",
+      "detail": "Sponsor deck freeze depends on Sponsor deck visual QA"
+     },
+     {
+      "source_commitment": "sponsor-visual-qa",
+      "affected_commitment": "sponsor-visual-qa",
+      "edge_type": "MUST_FOLLOW",
+      "constraint": "execution window",
+      "previous_status": "SATISFIED",
+      "new_status": "VIOLATED",
+      "detail": "Sponsor deck visual QA window feasibility for owner \"user-sam\""
+     },
+     {
+      "source_commitment": "sponsor-visual-qa",
+      "affected_commitment": "sponsor-visual-qa",
+      "edge_type": "MUST_PRECEDE",
+      "constraint": "execution window",
+      "previous_status": "SATISFIED",
+      "new_status": "VIOLATED",
+      "detail": "Sponsor deck visual QA window feasibility for owner \"user-sam\""
+     },
+     {
+      "source_commitment": "sponsor-visual-qa",
+      "affected_commitment": "sponsor-deck-freeze",
+      "edge_type": "MUST_PRECEDE",
+      "constraint": "ordering input at risk",
+      "previous_status": "SATISFIED",
+      "new_status": "VIOLATED",
+      "detail": "Sponsor deck freeze consumes the output of Sponsor deck visual QA"
+     },
+     {
+      "source_commitment": "econ402-midterm-2-prep",
+      "affected_commitment": "problem-set-6",
+      "edge_type": "SHARES_RESOURCE_WITH",
+      "constraint": "shared resource: user-time",
+      "previous_status": "SATISFIED",
+      "new_status": "SATISFIED",
+      "detail": "capacity-path slack 483 min \u2192 123 min"
+     },
+     {
+      "source_commitment": "econ402-midterm-2",
+      "affected_commitment": "technical-interview-1",
+      "edge_type": "REQUIRES_BUFFER",
+      "constraint": "180 min buffer (POST_EXAM_RECOVERY_BUFFER)",
+      "previous_status": "NOT_APPLICABLE",
+      "new_status": "VIOLATED",
+      "detail": "ECON 402 Midterm 2 \u2192 TechCorp technical interview"
+     },
+     {
+      "source_commitment": "sponsor-deck-freeze",
+      "affected_commitment": "sponsor-presentation",
+      "edge_type": "DEPENDS_ON",
+      "constraint": "prerequisite must complete first",
+      "previous_status": "SATISFIED",
+      "new_status": "VIOLATED",
+      "detail": "Sponsor presentation (CS Club) depends on Sponsor deck freeze"
+     },
+     {
+      "source_commitment": "sponsor-deck-freeze",
+      "affected_commitment": "sponsor-visual-qa",
+      "edge_type": "MUST_PRECEDE",
+      "constraint": "execution window boundary moved",
+      "previous_status": "SATISFIED",
+      "new_status": "VIOLATED",
+      "detail": "Sponsor deck freeze bounds the window of Sponsor deck visual QA"
+     },
+     {
+      "source_commitment": "problem-set-6",
+      "affected_commitment": "econ402-midterm-2-prep",
+      "edge_type": "SHARES_RESOURCE_WITH",
+      "constraint": "shared resource: user-time",
+      "previous_status": "SATISFIED",
+      "new_status": "VIOLATED",
+      "detail": "capacity-path slack 246 min \u2192 -216 min"
+     }
+    ]
+   }
+  },
+  {
+   "seq": 5,
+   "atIso": "2026-08-16T15:57:05.976Z",
+   "phase": "FEASIBILITY",
+   "message": "Global slack +4.1h \u2192 -3.6h; 3 violation(s)",
+   "data": {
+    "before": 246,
+    "after": -216,
+    "violations": [
+     {
+      "type": "ASSIGNEE_UNAVAILABLE",
+      "commitment_id": "sponsor-visual-qa",
+      "detail": "Sponsor deck visual QA: no feasible session for owner \"user-sam\" within its execution window"
+     },
+     {
+      "type": "INSUFFICIENT_PREP_CAPACITY",
+      "commitment_id": "econ402-midterm-2",
+      "detail": "ECON 402 exam preparation: 360 min of required work vs 144 min of usable capacity before its deadline",
+      "deficit_minutes": 216
+     },
+     {
+      "type": "BUFFER_VIOLATION",
+      "commitment_id": "technical-interview-1",
+      "detail": "TechCorp technical interview starts 120 min after ECON 402 Midterm 2 ends; 180 min required (POST_EXAM_RECOVERY_BUFFER)",
+      "deficit_minutes": 60
+     }
+    ]
+   }
+  },
+  {
+   "seq": 6,
+   "atIso": "2026-08-16T15:57:06.131Z",
+   "phase": "PLAN",
+   "message": "6 candidate repair(s) evaluated",
+   "data": {
+    "candidates": [
+     {
+      "id": "plan-0-s3480",
+      "label": "rebook interview + delegate QA + rebuild study plan",
+      "acceptable": false,
+      "autonomous": true,
+      "costTotal": 295,
+      "slackMinutes": -216,
+      "rejectionReason": "hard constraint violated: INSUFFICIENT_PREP_CAPACITY",
+      "actionCount": 9
+     },
+     {
+      "id": "plan-1-s3480",
+      "label": "rebook interview + delegate QA + move workout + rebuild study plan",
+      "acceptable": false,
+      "autonomous": true,
+      "costTotal": 325,
+      "slackMinutes": -156,
+      "rejectionReason": "hard constraint violated: INSUFFICIENT_PREP_CAPACITY",
+      "actionCount": 10
+     },
+     {
+      "id": "plan-2-s3480",
+      "label": "rebook interview + delegate QA + move side-project build block + rebuild study plan",
+      "acceptable": false,
+      "autonomous": true,
+      "costTotal": 330,
+      "slackMinutes": 18,
+      "rejectionReason": "insufficient repair margin: 18 min < 60 min required",
+      "actionCount": 11
+     },
+     {
+      "id": "plan-3-s3480",
+      "label": "rebook interview + delegate QA + move workout + move side-project build block + rebuild study plan",
+      "acceptable": true,
+      "autonomous": true,
+      "costTotal": 360,
+      "slackMinutes": 78,
+      "actionCount": 12
+     },
+     {
+      "id": "plan-4-alt1",
+      "label": "rebook interview + delegate QA + move workout + move side-project build block + rebuild study plan",
+      "acceptable": true,
+      "autonomous": true,
+      "costTotal": 360,
+      "slackMinutes": 78,
+      "actionCount": 12
+     },
+     {
+      "id": "plan-defer-deliverable",
+      "label": "rebook interview + defer deliverable + rebuild study plan",
+      "acceptable": false,
+      "autonomous": false,
+      "costTotal": 770,
+      "slackMinutes": -216,
+      "rejectionReason": "policy: Sponsor deck freeze is FIXED",
+      "actionCount": 9
+     }
+    ]
+   }
+  },
+  {
+   "seq": 7,
+   "atIso": "2026-08-16T15:57:06.132Z",
+   "phase": "SELECT",
+   "message": "Lowest-cost feasible plan selected: rebook interview + delegate QA + move workout + move side-project build block + rebuild study plan (cost 360, restored slack +1.3h)",
+   "data": {
+    "planId": "plan-3-s3480",
+    "cost": {
+     "total": 360,
+     "terms": [
+      {
+       "label": "commitment dropped: Study: ECON 402",
+       "amount": 25
+      },
+      {
+       "label": "commitment dropped: Study: ECON 402",
+       "amount": 25
+      },
+      {
+       "label": "commitment dropped: Study: ECON 402",
+       "amount": 25
+      },
+      {
+       "label": "commitment dropped: Study: ECON 402",
+       "amount": 25
+      },
+      {
+       "label": "commitment dropped: Study: ECON 402",
+       "amount": 25
+      },
+      {
+       "label": "major schedule move: Book \"TechCorp technical interview\" at 2026-08-20T10:00:00-05:00",
+       "amount": 100
+      },
+      {
+       "label": "external action: Book \"TechCorp technical interview\" at 2026-08-20T10:00:00-05:00",
+       "amount": 5
+      },
+      {
+       "label": "external action: Update calendar for \"TechCorp technical interview\" to 2026-08-20T10:00:00-05:00",
+       "amount": 5
+      },
+      {
+       "label": "delegation: Delegate \"Sponsor deck visual QA\" to Maya Okafor",
+       "amount": 25
+      },
+      {
+       "label": "external action: Delegate \"Sponsor deck visual QA\" to Maya Okafor",
+       "amount": 5
+      },
+      {
+       "label": "minor schedule move: Move \"Workout\" to 2026-08-19T16:45:00-05:00",
+       "amount": 25
+      },
+      {
+       "label": "external action: Move \"Workout\" to 2026-08-19T16:45:00-05:00",
+       "amount": 5
+      },
+      {
+       "label": "minor schedule move: Move \"Side-project build block\" to 2026-08-20T12:00:00-05:00",
+       "amount": 25
+      },
+      {
+       "label": "external action: Move \"Side-project build block\" to 2026-08-20T12:00:00-05:00",
+       "amount": 5
+      },
+      {
+       "label": "external action: Remove invalidated block \"Study: ECON 402\" (2026-08-21T08:30:00-05:00)",
+       "amount": 5
+      },
+      {
+       "label": "external action: Remove invalidated block \"Study: ECON 402\" (2026-08-21T10:00:00-05:00)",
+       "amount": 5
+      },
+      {
+       "label": "external action: Remove invalidated block \"Study: ECON 402\" (2026-08-20T19:00:00-05:00)",
+       "amount": 5
+      },
+      {
+       "label": "external action: Remove invalidated block \"Study: ECON 402\" (2026-08-20T21:15:00-05:00)",
+       "amount": 5
+      },
+      {
+       "label": "external action: Remove invalidated block \"Study: ECON 402\" (2026-08-19T20:30:00-05:00)",
+       "amount": 5
+      },
+      {
+       "label": "external action: Reserve 204 min for \"ECON 402 exam preparation\" at 2026-08-18T19:30:00-05:00",
+       "amount": 5
+      },
+      {
+       "label": "external action: Reserve 156 min for \"ECON 402 exam preparation\" at 2026-08-19T09:00:00-05:00",
+       "amount": 5
+      }
+     ]
+    },
+    "slack": 78
+   }
+  },
+  {
+   "seq": 8,
+   "atIso": "2026-08-16T15:57:06.132Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Book \"TechCorp technical interview\" at 2026-08-20T10:00:00-05:00 [interview-slots-recruiter-approved-only]"
+  },
+  {
+   "seq": 9,
+   "atIso": "2026-08-16T15:57:06.290Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Update calendar for \"TechCorp technical interview\" to 2026-08-20T10:00:00-05:00 [sync-calendar-with-approved-booking]"
+  },
+  {
+   "seq": 10,
+   "atIso": "2026-08-16T15:57:06.433Z",
+   "phase": "POLICY",
+   "message": "ALLOW_AND_NOTIFY: Delegate \"Sponsor deck visual QA\" to Maya Okafor [delegate-explicitly-delegatable]"
+  },
+  {
+   "seq": 11,
+   "atIso": "2026-08-16T15:57:06.612Z",
+   "phase": "POLICY",
+   "message": "ALLOW_AND_NOTIFY: Notify Maya Okafor about the delegation [routine-operational-updates]"
+  },
+  {
+   "seq": 12,
+   "atIso": "2026-08-16T15:57:06.812Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Move \"Workout\" to 2026-08-19T16:45:00-05:00 [move-flexible-or-optional-blocks]"
+  },
+  {
+   "seq": 13,
+   "atIso": "2026-08-16T15:57:07.026Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Move \"Side-project build block\" to 2026-08-20T12:00:00-05:00 [move-flexible-or-optional-blocks]"
+  },
+  {
+   "seq": 14,
+   "atIso": "2026-08-16T15:57:07.177Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Remove invalidated block \"Study: ECON 402\" (2026-08-21T08:30:00-05:00) [restructure-study-blocks]"
+  },
+  {
+   "seq": 15,
+   "atIso": "2026-08-16T15:57:07.315Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Remove invalidated block \"Study: ECON 402\" (2026-08-21T10:00:00-05:00) [restructure-study-blocks]"
+  },
+  {
+   "seq": 16,
+   "atIso": "2026-08-16T15:57:07.435Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Remove invalidated block \"Study: ECON 402\" (2026-08-20T19:00:00-05:00) [restructure-study-blocks]"
+  },
+  {
+   "seq": 17,
+   "atIso": "2026-08-16T15:57:07.584Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Remove invalidated block \"Study: ECON 402\" (2026-08-20T21:15:00-05:00) [restructure-study-blocks]"
+  },
+  {
+   "seq": 18,
+   "atIso": "2026-08-16T15:57:07.715Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Remove invalidated block \"Study: ECON 402\" (2026-08-19T20:30:00-05:00) [restructure-study-blocks]"
+  },
+  {
+   "seq": 19,
+   "atIso": "2026-08-16T15:57:07.817Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Reserve 204 min for \"ECON 402 exam preparation\" at 2026-08-18T19:30:00-05:00 [restructure-study-blocks]"
+  },
+  {
+   "seq": 20,
+   "atIso": "2026-08-16T15:57:08.139Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Reserve 156 min for \"ECON 402 exam preparation\" at 2026-08-19T09:00:00-05:00 [restructure-study-blocks]"
+  },
+  {
+   "seq": 21,
+   "atIso": "2026-08-16T15:57:08.280Z",
+   "phase": "LEDGER",
+   "message": "13 action intent(s) persisted to durable ledger"
+  },
+  {
+   "seq": 22,
+   "atIso": "2026-08-16T15:57:08.396Z",
+   "phase": "ACTION",
+   "message": "Book \"TechCorp technical interview\" at 2026-08-20T10:00:00-05:00",
+   "data": {
+    "actionId": "act_wf-evt-gmail-econ-move-1:book_interview_slot:tec",
+    "type": "BOOK_INTERVIEW_SLOT",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 23,
+   "atIso": "2026-08-16T15:57:08.514Z",
+   "phase": "ERROR",
+   "message": "Book \"TechCorp technical interview\" at 2026-08-20T10:00:00-05:00 failed: 409 SLOT_NO_LONGER_AVAILABLE: 2026-08-20T10:00:00-05:00",
+   "data": {
+    "code": "SLOT_NO_LONGER_AVAILABLE",
+    "transient": false
+   }
+  },
+  {
+   "seq": 24,
+   "atIso": "2026-08-16T15:57:09.019Z",
+   "phase": "OBSERVE",
+   "message": "External state refreshed after failure",
+   "data": {
+    "failedAction": "Book \"TechCorp technical interview\" at 2026-08-20T10:00:00-05:00"
+   }
+  },
+  {
+   "seq": 25,
+   "atIso": "2026-08-16T15:57:09.020Z",
+   "phase": "REPLAN",
+   "message": "Re-evaluating remaining repair options against refreshed external state"
+  },
+  {
+   "seq": 26,
+   "atIso": "2026-08-16T15:57:09.068Z",
+   "phase": "PLAN",
+   "message": "5 candidate repair(s) evaluated",
+   "data": {
+    "candidates": [
+     {
+      "id": "plan-0-s3660",
+      "label": "rebook interview + delegate QA + rebuild study plan",
+      "acceptable": false,
+      "autonomous": true,
+      "costTotal": 295,
+      "slackMinutes": -216,
+      "rejectionReason": "hard constraint violated: INSUFFICIENT_PREP_CAPACITY",
+      "actionCount": 9
+     },
+     {
+      "id": "plan-1-s3660",
+      "label": "rebook interview + delegate QA + move workout + rebuild study plan",
+      "acceptable": false,
+      "autonomous": true,
+      "costTotal": 325,
+      "slackMinutes": -156,
+      "rejectionReason": "hard constraint violated: INSUFFICIENT_PREP_CAPACITY",
+      "actionCount": 10
+     },
+     {
+      "id": "plan-2-s3660",
+      "label": "rebook interview + delegate QA + move side-project build block + rebuild study plan",
+      "acceptable": false,
+      "autonomous": true,
+      "costTotal": 330,
+      "slackMinutes": 18,
+      "rejectionReason": "insufficient repair margin: 18 min < 60 min required",
+      "actionCount": 11
+     },
+     {
+      "id": "plan-3-s3660",
+      "label": "rebook interview + delegate QA + move workout + move side-project build block + rebuild study plan",
+      "acceptable": true,
+      "autonomous": true,
+      "costTotal": 360,
+      "slackMinutes": 78,
+      "actionCount": 12
+     },
+     {
+      "id": "plan-defer-deliverable",
+      "label": "rebook interview + defer deliverable + rebuild study plan",
+      "acceptable": false,
+      "autonomous": false,
+      "costTotal": 770,
+      "slackMinutes": -216,
+      "rejectionReason": "policy: Sponsor deck freeze is FIXED",
+      "actionCount": 9
+     }
+    ]
+   }
+  },
+  {
+   "seq": 27,
+   "atIso": "2026-08-16T15:57:09.075Z",
+   "phase": "SELECT",
+   "message": "Lowest-cost feasible plan selected: rebook interview + delegate QA + move workout + move side-project build block + rebuild study plan (cost 360, restored slack +1.3h)",
+   "data": {
+    "planId": "plan-3-s3660",
+    "cost": {
+     "total": 360,
+     "terms": [
+      {
+       "label": "commitment dropped: Study: ECON 402",
+       "amount": 25
+      },
+      {
+       "label": "commitment dropped: Study: ECON 402",
+       "amount": 25
+      },
+      {
+       "label": "commitment dropped: Study: ECON 402",
+       "amount": 25
+      },
+      {
+       "label": "commitment dropped: Study: ECON 402",
+       "amount": 25
+      },
+      {
+       "label": "commitment dropped: Study: ECON 402",
+       "amount": 25
+      },
+      {
+       "label": "major schedule move: Book \"TechCorp technical interview\" at 2026-08-20T13:00:00-05:00",
+       "amount": 100
+      },
+      {
+       "label": "external action: Book \"TechCorp technical interview\" at 2026-08-20T13:00:00-05:00",
+       "amount": 5
+      },
+      {
+       "label": "external action: Update calendar for \"TechCorp technical interview\" to 2026-08-20T13:00:00-05:00",
+       "amount": 5
+      },
+      {
+       "label": "delegation: Delegate \"Sponsor deck visual QA\" to Maya Okafor",
+       "amount": 25
+      },
+      {
+       "label": "external action: Delegate \"Sponsor deck visual QA\" to Maya Okafor",
+       "amount": 5
+      },
+      {
+       "label": "minor schedule move: Move \"Workout\" to 2026-08-19T16:45:00-05:00",
+       "amount": 25
+      },
+      {
+       "label": "external action: Move \"Workout\" to 2026-08-19T16:45:00-05:00",
+       "amount": 5
+      },
+      {
+       "label": "minor schedule move: Move \"Side-project build block\" to 2026-08-20T14:00:00-05:00",
+       "amount": 25
+      },
+      {
+       "label": "external action: Move \"Side-project build block\" to 2026-08-20T14:00:00-05:00",
+       "amount": 5
+      },
+      {
+       "label": "external action: Remove invalidated block \"Study: ECON 402\" (2026-08-21T08:30:00-05:00)",
+       "amount": 5
+      },
+      {
+       "label": "external action: Remove invalidated block \"Study: ECON 402\" (2026-08-21T10:00:00-05:00)",
+       "amount": 5
+      },
+      {
+       "label": "external action: Remove invalidated block \"Study: ECON 402\" (2026-08-20T19:00:00-05:00)",
+       "amount": 5
+      },
+      {
+       "label": "external action: Remove invalidated block \"Study: ECON 402\" (2026-08-20T21:15:00-05:00)",
+       "amount": 5
+      },
+      {
+       "label": "external action: Remove invalidated block \"Study: ECON 402\" (2026-08-19T20:30:00-05:00)",
+       "amount": 5
+      },
+      {
+       "label": "external action: Reserve 204 min for \"ECON 402 exam preparation\" at 2026-08-18T19:30:00-05:00",
+       "amount": 5
+      },
+      {
+       "label": "external action: Reserve 156 min for \"ECON 402 exam preparation\" at 2026-08-19T09:00:00-05:00",
+       "amount": 5
+      }
+     ]
+    },
+    "slack": 78
+   }
+  },
+  {
+   "seq": 28,
+   "atIso": "2026-08-16T15:57:09.075Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Book \"TechCorp technical interview\" at 2026-08-20T13:00:00-05:00 [interview-slots-recruiter-approved-only]"
+  },
+  {
+   "seq": 29,
+   "atIso": "2026-08-16T15:57:09.204Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Update calendar for \"TechCorp technical interview\" to 2026-08-20T13:00:00-05:00 [sync-calendar-with-approved-booking]"
+  },
+  {
+   "seq": 30,
+   "atIso": "2026-08-16T15:57:09.303Z",
+   "phase": "POLICY",
+   "message": "ALLOW_AND_NOTIFY: Delegate \"Sponsor deck visual QA\" to Maya Okafor [delegate-explicitly-delegatable]"
+  },
+  {
+   "seq": 31,
+   "atIso": "2026-08-16T15:57:09.431Z",
+   "phase": "POLICY",
+   "message": "ALLOW_AND_NOTIFY: Notify Maya Okafor about the delegation [routine-operational-updates]"
+  },
+  {
+   "seq": 32,
+   "atIso": "2026-08-16T15:57:09.556Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Move \"Workout\" to 2026-08-19T16:45:00-05:00 [move-flexible-or-optional-blocks]"
+  },
+  {
+   "seq": 33,
+   "atIso": "2026-08-16T15:57:09.672Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Move \"Side-project build block\" to 2026-08-20T14:00:00-05:00 [move-flexible-or-optional-blocks]"
+  },
+  {
+   "seq": 34,
+   "atIso": "2026-08-16T15:57:09.798Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Remove invalidated block \"Study: ECON 402\" (2026-08-21T08:30:00-05:00) [restructure-study-blocks]"
+  },
+  {
+   "seq": 35,
+   "atIso": "2026-08-16T15:57:09.850Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Remove invalidated block \"Study: ECON 402\" (2026-08-21T10:00:00-05:00) [restructure-study-blocks]"
+  },
+  {
+   "seq": 36,
+   "atIso": "2026-08-16T15:57:09.969Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Remove invalidated block \"Study: ECON 402\" (2026-08-20T19:00:00-05:00) [restructure-study-blocks]"
+  },
+  {
+   "seq": 37,
+   "atIso": "2026-08-16T15:57:10.017Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Remove invalidated block \"Study: ECON 402\" (2026-08-20T21:15:00-05:00) [restructure-study-blocks]"
+  },
+  {
+   "seq": 38,
+   "atIso": "2026-08-16T15:57:10.128Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Remove invalidated block \"Study: ECON 402\" (2026-08-19T20:30:00-05:00) [restructure-study-blocks]"
+  },
+  {
+   "seq": 39,
+   "atIso": "2026-08-16T15:57:10.231Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Reserve 204 min for \"ECON 402 exam preparation\" at 2026-08-18T19:30:00-05:00 [restructure-study-blocks]"
+  },
+  {
+   "seq": 40,
+   "atIso": "2026-08-16T15:57:10.265Z",
+   "phase": "POLICY",
+   "message": "ALLOW: Reserve 156 min for \"ECON 402 exam preparation\" at 2026-08-19T09:00:00-05:00 [restructure-study-blocks]"
+  },
+  {
+   "seq": 41,
+   "atIso": "2026-08-16T15:57:10.369Z",
+   "phase": "LEDGER",
+   "message": "10 action intent(s) persisted to durable ledger (7 revived from invalidated plan)"
+  },
+  {
+   "seq": 42,
+   "atIso": "2026-08-16T15:57:10.578Z",
+   "phase": "ACTION",
+   "message": "Book \"TechCorp technical interview\" at 2026-08-20T13:00:00-05:00",
+   "data": {
+    "actionId": "act_wf-evt-gmail-econ-move-1:book_interview_slot:tec",
+    "type": "BOOK_INTERVIEW_SLOT",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 43,
+   "atIso": "2026-08-16T15:57:10.696Z",
+   "phase": "VERIFY",
+   "message": "Verified: Book \"TechCorp technical interview\" at 2026-08-20T13:00:00-05:00",
+   "data": {
+    "observed": {
+     "bookingId": "bk_slot-thu-1300",
+     "slotId": "slot-thu-1300",
+     "startIso": "2026-08-20T13:00:00-05:00"
+    }
+   }
+  },
+  {
+   "seq": 44,
+   "atIso": "2026-08-16T15:57:10.805Z",
+   "phase": "ACTION",
+   "message": "Update calendar for \"TechCorp technical interview\" to 2026-08-20T13:00:00-05:00",
+   "data": {
+    "actionId": "act_wf-evt-gmail-econ-move-1:move_calendar_event:tec",
+    "type": "MOVE_CALENDAR_EVENT",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 45,
+   "atIso": "2026-08-16T15:57:11.746Z",
+   "phase": "VERIFY",
+   "message": "Verified: Update calendar for \"TechCorp technical interview\" to 2026-08-20T13:00:00-05:00",
+   "data": {
+    "observed": {
+     "id": "cal-technical-interview-1",
+     "title": "TechCorp technical interview",
+     "startIso": "2026-08-20T13:00:00-05:00",
+     "endIso": "2026-08-20T14:00:00-05:00",
+     "metadata": {
+      "googleEventId": "61b900t6ljvcellfk3uj7322k0"
+     }
+    }
+   }
+  },
+  {
+   "seq": 46,
+   "atIso": "2026-08-16T15:57:11.866Z",
+   "phase": "ACTION",
+   "message": "Delegate \"Sponsor deck visual QA\" to Maya Okafor",
+   "data": {
+    "actionId": "act_wf-evt-gmail-econ-move-1:delegate_task:sponsor-v",
+    "type": "DELEGATE_TASK",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 47,
+   "atIso": "2026-08-16T15:57:11.959Z",
+   "phase": "VERIFY",
+   "message": "Verified: Delegate \"Sponsor deck visual QA\" to Maya Okafor",
+   "data": {
+    "observed": {
+     "owner": "maya-okafor"
+    }
+   }
+  },
+  {
+   "seq": 48,
+   "atIso": "2026-08-16T15:57:12.063Z",
+   "phase": "ACTION",
+   "message": "Notify Maya Okafor about the delegation",
+   "data": {
+    "actionId": "act_wf-evt-gmail-econ-move-1:send_notification:maya-",
+    "type": "SEND_NOTIFICATION",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 49,
+   "atIso": "2026-08-16T15:57:12.159Z",
+   "phase": "VERIFY",
+   "message": "Verified: Notify Maya Okafor about the delegation",
+   "data": {
+    "observed": {
+     "sent": true
+    }
+   }
+  },
+  {
+   "seq": 50,
+   "atIso": "2026-08-16T15:57:12.274Z",
+   "phase": "ACTION",
+   "message": "Move \"Workout\" to 2026-08-19T16:45:00-05:00",
+   "data": {
+    "actionId": "act_wf-evt-gmail-econ-move-1:move_calendar_event:tue",
+    "type": "MOVE_CALENDAR_EVENT",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 51,
+   "atIso": "2026-08-16T15:57:13.113Z",
+   "phase": "VERIFY",
+   "message": "Verified: Move \"Workout\" to 2026-08-19T16:45:00-05:00",
+   "data": {
+    "observed": {
+     "id": "cal-tuesday-workout",
+     "title": "Workout",
+     "startIso": "2026-08-19T16:45:00-05:00",
+     "endIso": "2026-08-19T17:45:00-05:00",
+     "metadata": {
+      "googleEventId": "55cg121vha9bb2m2j0o9o63cas"
+     }
+    }
+   }
+  },
+  {
+   "seq": 52,
+   "atIso": "2026-08-16T15:57:13.209Z",
+   "phase": "ACTION",
+   "message": "Move \"Side-project build block\" to 2026-08-20T14:00:00-05:00",
+   "data": {
+    "actionId": "act_wf-evt-gmail-econ-move-1:move_calendar_event:sid",
+    "type": "MOVE_CALENDAR_EVENT",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 53,
+   "atIso": "2026-08-16T15:57:14.124Z",
+   "phase": "VERIFY",
+   "message": "Verified: Move \"Side-project build block\" to 2026-08-20T14:00:00-05:00",
+   "data": {
+    "observed": {
+     "id": "cal-side-project-block",
+     "title": "Side-project build block",
+     "startIso": "2026-08-20T14:00:00-05:00",
+     "endIso": "2026-08-20T18:00:00-05:00",
+     "metadata": {
+      "googleEventId": "ur4jci8vsn858fpp6biu17pcmo"
+     }
+    }
+   }
+  },
+  {
+   "seq": 54,
+   "atIso": "2026-08-16T15:57:14.239Z",
+   "phase": "ACTION",
+   "message": "Remove invalidated block \"Study: ECON 402\" (2026-08-21T08:30:00-05:00)",
+   "data": {
+    "actionId": "act_wf-evt-gmail-econ-move-1:delete_calendar_event:f",
+    "type": "DELETE_CALENDAR_EVENT",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 55,
+   "atIso": "2026-08-16T15:57:14.955Z",
+   "phase": "VERIFY",
+   "message": "Verified: Remove invalidated block \"Study: ECON 402\" (2026-08-21T08:30:00-05:00)",
+   "data": {
+    "observed": null
+   }
+  },
+  {
+   "seq": 56,
+   "atIso": "2026-08-16T15:57:15.078Z",
+   "phase": "ACTION",
+   "message": "Remove invalidated block \"Study: ECON 402\" (2026-08-21T10:00:00-05:00)",
+   "data": {
+    "actionId": "act_wf-evt-gmail-econ-move-1:delete_calendar_event:f",
+    "type": "DELETE_CALENDAR_EVENT",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 57,
+   "atIso": "2026-08-16T15:57:15.691Z",
+   "phase": "VERIFY",
+   "message": "Verified: Remove invalidated block \"Study: ECON 402\" (2026-08-21T10:00:00-05:00)",
+   "data": {
+    "observed": null
+   }
+  },
+  {
+   "seq": 58,
+   "atIso": "2026-08-16T15:57:15.797Z",
+   "phase": "ACTION",
+   "message": "Remove invalidated block \"Study: ECON 402\" (2026-08-20T19:00:00-05:00)",
+   "data": {
+    "actionId": "act_wf-evt-gmail-econ-move-1:delete_calendar_event:t",
+    "type": "DELETE_CALENDAR_EVENT",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 59,
+   "atIso": "2026-08-16T15:57:16.444Z",
+   "phase": "VERIFY",
+   "message": "Verified: Remove invalidated block \"Study: ECON 402\" (2026-08-20T19:00:00-05:00)",
+   "data": {
+    "observed": null
+   }
+  },
+  {
+   "seq": 60,
+   "atIso": "2026-08-16T15:57:16.559Z",
+   "phase": "ACTION",
+   "message": "Remove invalidated block \"Study: ECON 402\" (2026-08-20T21:15:00-05:00)",
+   "data": {
+    "actionId": "act_wf-evt-gmail-econ-move-1:delete_calendar_event:t",
+    "type": "DELETE_CALENDAR_EVENT",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 61,
+   "atIso": "2026-08-16T15:57:17.322Z",
+   "phase": "VERIFY",
+   "message": "Verified: Remove invalidated block \"Study: ECON 402\" (2026-08-20T21:15:00-05:00)",
+   "data": {
+    "observed": null
+   }
+  },
+  {
+   "seq": 62,
+   "atIso": "2026-08-16T15:57:17.448Z",
+   "phase": "ACTION",
+   "message": "Remove invalidated block \"Study: ECON 402\" (2026-08-19T20:30:00-05:00)",
+   "data": {
+    "actionId": "act_wf-evt-gmail-econ-move-1:delete_calendar_event:w",
+    "type": "DELETE_CALENDAR_EVENT",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 63,
+   "atIso": "2026-08-16T15:57:18.155Z",
+   "phase": "VERIFY",
+   "message": "Verified: Remove invalidated block \"Study: ECON 402\" (2026-08-19T20:30:00-05:00)",
+   "data": {
+    "observed": null
+   }
+  },
+  {
+   "seq": 64,
+   "atIso": "2026-08-16T15:57:18.262Z",
+   "phase": "ACTION",
+   "message": "Reserve 204 min for \"ECON 402 exam preparation\" at 2026-08-18T19:30:00-05:00",
+   "data": {
+    "actionId": "act_wf-evt-gmail-econ-move-1:create_calendar_event:s",
+    "type": "CREATE_CALENDAR_EVENT",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 65,
+   "atIso": "2026-08-16T15:57:18.914Z",
+   "phase": "VERIFY",
+   "message": "Verified: Reserve 204 min for \"ECON 402 exam preparation\" at 2026-08-18T19:30:00-05:00",
+   "data": {
+    "observed": {
+     "id": "cal-study-econ402-midterm-2-prep-1",
+     "title": "Study: ECON 402 exam preparation",
+     "startIso": "2026-08-18T19:30:00-05:00",
+     "endIso": "2026-08-18T23:00:00-05:00",
+     "metadata": {
+      "googleEventId": "pq4m5a0luecnbce7t54i4a5kjc"
+     }
+    }
+   }
+  },
+  {
+   "seq": 66,
+   "atIso": "2026-08-16T15:57:19.015Z",
+   "phase": "ACTION",
+   "message": "Reserve 156 min for \"ECON 402 exam preparation\" at 2026-08-19T09:00:00-05:00",
+   "data": {
+    "actionId": "act_wf-evt-gmail-econ-move-1:create_calendar_event:s",
+    "type": "CREATE_CALENDAR_EVENT",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 67,
+   "atIso": "2026-08-16T15:57:19.678Z",
+   "phase": "VERIFY",
+   "message": "Verified: Reserve 156 min for \"ECON 402 exam preparation\" at 2026-08-19T09:00:00-05:00",
+   "data": {
+    "observed": {
+     "id": "cal-study-econ402-midterm-2-prep-2",
+     "title": "Study: ECON 402 exam preparation",
+     "startIso": "2026-08-19T09:00:00-05:00",
+     "endIso": "2026-08-19T11:42:00-05:00",
+     "metadata": {
+      "googleEventId": "abumc37bq915ac7uisoi29dlu4"
+     }
+    }
+   }
+  },
+  {
+   "seq": 68,
+   "atIso": "2026-08-16T15:57:19.780Z",
+   "phase": "RESOLVED",
+   "message": "Feasibility restored \u2014 global slack +1.3h",
+   "data": {
+    "slack": 78
+   }
+  }
+ ],
+ "gemini": {
+  "model": "gemini-3.5-flash",
+  "latencyMs": 9354,
+  "vertexai": true
+ },
+ "calendarId": "1e09769341c3f429cc3ed9566cb12be7ec9e5ebd70b2dce7af62c1ecf84301a4@group.calendar.google.com"
+}

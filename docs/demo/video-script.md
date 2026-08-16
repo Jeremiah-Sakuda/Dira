@@ -1,71 +1,103 @@
-# Demo video — script & shot list
+# Demo video — script and shot list
 
-**Target runtime 3:40–3:45** (hard limit ~4:00; keep 15–20s of safety, PRD §50).
-Record only after the reliability bar: 20/20 deterministic replays (CI has
-this), 10/10 live-model runs, 10/10 production-like runs.
+**Target runtime: 3:35–3:45.** The hackathon limit is four minutes; preserve at
+least 15 seconds of export/upload safety. Record only after the dashboard
+visibly says `LIVE CLOUD`, the Gemini evaluation passes, and the production
+rehearsal succeeds repeatedly.
 
 ## Pre-record checklist
 
-- [ ] GCP project provisioned; `infrastructure/cloud-run/deploy.sh` run;
-      Cloud Run console tab open (judging requires visible Google Cloud
-      deployment)
-- [ ] Demo Gmail + Calendar accounts logged in (synthetic identities)
-- [ ] Recruiter endpoint seeded; **flip which slot is taken right before
-      recording** (the §51 runtime variable Dira can't know in advance)
-- [ ] Dashboard open on System page (FEASIBLE, +4.1h)
-- [ ] Screen recorder at 1080p, mic checked
+- [ ] Dedicated Dira GCP project provisioned and `deploy.sh` completed.
+- [ ] Cloud Run service URL opens; structured logs are visible.
+- [ ] Vertex AI evaluation artifact saved with every case passing.
+- [ ] Google Calendar is open to the service-account-managed Dira calendar.
+- [ ] Firestore recruiter slots are open in the Cloud console.
+- [ ] Immediately before recording, flip the first recruiter slot to taken.
+- [ ] Dashboard Interventions page shows `LIVE CLOUD`.
+- [ ] Default scenario has been rehearsed, then reset for a clean recording.
+- [ ] Browser zoom, notifications, 1080p capture, and microphone are checked.
 
 ## Script
 
-**0:00–0:15 — lived friction** *(face or voiceover over a messy calendar)*
-> "I'm a student balancing classes, recruiting, and student orgs. The hard
-> part isn't remembering what I have to do. It's figuring out what everything
-> else breaks when one commitment changes."
+**0:00–0:15 — lived friction** *(voiceover over a crowded calendar)*
 
-**0:15–0:27 — thesis** *(cut to Dira System page)*
-> "Dira is a self-healing operating system for commitments."
-Show: `SYSTEM FEASIBLE · Global slack +4.1h`.
+> “I am balancing classes, recruiting, and a student organization. The hard
+> part is not remembering what I have to do. It is figuring out what
+> everything else breaks when one commitment changes.”
 
-**0:27–0:35 — autonomy declaration** *(hands off keyboard, visible)*
-> "I'm not going to touch Dira for the rest of this workflow."
+**0:15–0:28 — thesis** *(cut to Interventions)*
 
-**0:35–2:30 — unedited live execution** *(single take, no cuts)*
-Send the professor email from Prof. Chen's account. Switch to the
-Interventions flight recorder and let it narrate itself:
-DETECT → INTERPRET → PROPAGATE (6 commitments) → FEASIBILITY (−3.6h) →
-PLAN (candidates table) → ACTION (books first available slot) → **ERROR 409**
-→ OBSERVE → REPLAN → ACTION (books the other slot) → VERIFY → RESOLVED (+1.3h).
-Say almost nothing; point at the 409 when it happens:
-> "That slot was taken 30 seconds ago. Watch."
+> “Dira is a self-healing operating system for commitments.”
 
-**2:30–2:50 — external proof** *(fast tab tour)*
-Google Calendar: interview moved, study blocks rebuilt, workout and
-side-project relocated. Gmail: Maya's delegation notification. Org tracker:
-QA owner = Maya. Back to Dira: RESOLVED, 0 user interventions.
+Show the `LIVE CLOUD` badge and its detail: Cloud Run, Vertex AI, Firestore,
+and Google Calendar.
 
-**2:50–3:12 — architecture** *(diagram slide)*
-> "Pub/Sub into Cloud Run. Gemini — through the GenAI SDK — only interprets;
-> a deterministic solver owns feasibility. Plans are validated, policy-gated,
-> written to a durable action ledger, executed through scoped tools, and a
-> verifier re-reads the outside world before Dira believes anything."
+**0:28–0:42 — judge-controlled input**
 
-**3:12–3:27 — cloud + reproducibility proof**
-Cloud Run services + logs; then a terminal:
-`make demo-replay` → `Assertions: 18/18 passed`, and the CI badge with
-`golden-replay-20x: 20/20`.
+Select **48-Hour Shock**, briefly point to the other counterfactuals, and click
+**Run selected scenario**.
 
-**3:27–3:43 — payoff** *(metrics card)*
-```
+> “The scenario changes the world state, not the plan. Dira has to derive the
+> repair from what it finds.”
+
+**0:42–2:22 — unedited execution** *(one take, no cuts)*
+
+Let the recorder show INTERPRET → PROPAGATE → FEASIBILITY (−3.6h) → PLAN →
+POLICY → ACTION → ERROR 409 → OBSERVE → REPLAN → ACTION → VERIFY → RESOLVED
+(+1.3h). Point to the Vertex model/latency telemetry and the 409.
+
+> “That slot was taken just before this run. Dira did not know that. Watch it
+> refresh reality and recover.”
+
+**2:22–2:47 — external proof** *(quick tab tour)*
+
+- Google Calendar: interview moved and study plan rebuilt.
+- Firestore recruiter booking: second slot confirmed.
+- Firestore organization task: QA owner is the designated backup.
+- Firestore outbox: notification record exists.
+- Back to Dira: `RESOLVED`, +1.3h, zero human actions.
+
+Say explicitly that recruiter, organization, and outbox are controlled
+integrations. Do not call the outbox a Gmail send.
+
+**2:47–3:09 — architecture**
+
+Show `docs/architecture/dira-production.svg`.
+
+> “A judge control reaches one Cloud Run service. Gemini on Vertex AI only
+> interprets; deterministic code owns feasibility and authorization. Every
+> action is policy-gated, persisted to a Firestore ledger, executed through a
+> narrow adapter, and re-read before Dira believes it happened.”
+
+**3:09–3:27 — cloud and reproducibility proof**
+
+Show the Cloud Run service and structured completion log, Vertex AI evidence,
+then the terminal: `make demo-replay` with `Assertions: 18/18 passed`, followed
+by the CI `golden-replay-20x: 20/20` artifact.
+
+**3:27–3:43 — payoff** *(run outcome card)*
+
+```text
 USER INTERVENTIONS      0
 COMMITMENTS DROPPED     0
 VERIFIED MUTATIONS     13
 FAILURES RECOVERED      1
 GLOBAL SLACK        +1.3h
 ```
-> "Calendars tell you when plans collide. Dira repairs them."
 
-## Optional 10–15s montage (§37)
+> “Calendars tell you when plans collide. Dira repairs them.”
 
-Recruiter-withdrawal secondary trigger: email offering Tue 4 PM / Fri 10 AM →
-Dira books Tuesday because Friday would eat pre-exam study capacity. One
-caption: "Different trigger class. Same engine."
+## Required pickup shots before export
+
+- Cloud Run status plus structured run-complete log containing the workflow
+  ID and Gemini model/latency. Never show the demo token.
+- Vertex AI project/model evidence.
+- Firestore action-ledger record ending `VERIFIED`.
+- Google Calendar before and after.
+- CI `golden-replay-20x` artifact.
+
+## Optional 10-second montage
+
+Run **Earlier exam** and caption the changed behavior: the interview buffer
+holds, so Dira correctly does not rebook it. This is the clearest compact
+proof that the system derives rather than replays a memorized action list.

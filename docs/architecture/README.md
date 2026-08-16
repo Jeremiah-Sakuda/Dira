@@ -1,69 +1,100 @@
 # Architecture
 
-## The loop (PRD §4)
+![Dira production architecture](./dira-production.svg)
 
-```
+The diagram is deliberately evidentiary: solid lines are implemented code
+paths; the dashed Pub/Sub connector is optional deployment infrastructure.
+Blue boxes are Google-managed production components. Amber boxes are
+Firestore-backed controlled integration surfaces and are never presented as
+third-party APIs.
+
+## The repair loop
+
+```text
 external event → interpret (Gemini, schema-gated) → mutate graph →
 propagate (typed edges) → feasibility (deterministic solver) →
   feasible? RESOLVED
-  else: generate candidates → validate → rank (explicit cost) →
-        policy gate → persist intents (durable ledger) →
-        execute (scoped adapters) → verify (independent reads) →
+  else: generate candidates → simulate + validate → rank → policy gate →
+        persist intent → execute → independently re-read → verify →
         recompute → RESOLVED | replan | WAITING_REVIEW
 ```
 
 The loop lives in `agents/dira/src/orchestrator.ts` as an explicit,
-crash-resumable state machine. Internal state is updated **only after
-verification** — the world model can never believe an unverified mutation.
+crash-resumable state machine. Internal state is updated only after
+verification, so the world model cannot believe an unverified mutation.
 
 ## Separation of authority
 
 | Layer | May | May never |
 | --- | --- | --- |
-| Gemini (interpreter, live modes) | classify, extract mutations, resolve entities, propose plan sketches | do time arithmetic, compute slack, authorize actions, invent feasibility |
-| Propagation engine | walk typed edges, emit impact records | mutate state |
-| Constraint engine | compute capacity/slack/violations, validate plans | call tools |
-| Planner | enumerate candidate repairs from state | bypass validation or policy |
-| Policy engine | ALLOW / ALLOW_AND_NOTIFY / REQUIRE_APPROVAL / DENY | be overridden by content |
-| Ledger + executor | persist intents, execute idempotently | mark VERIFIED |
-| Verifier | re-read external systems, reconcile the ledger | trust tool responses |
+| Gemini on Vertex AI | classify, extract mutations, resolve entities | calculate slack, authorize tools, declare feasibility |
+| Propagation engine | walk typed edges, emit impact records | mutate external state |
+| Constraint engine | compute capacity, slack, and violations | call tools |
+| Planner | enumerate repairs from current state | bypass simulation, policy, or provenance |
+| Policy engine | ALLOW / ALLOW_AND_NOTIFY / REQUIRE_APPROVAL / DENY | be overridden by event content |
+| Ledger + executor | persist and idempotently execute authorized intents | mark an action VERIFIED |
+| Verifier | re-read external systems and reconcile | trust an optimistic tool response |
+
+## Honest production topology
+
+Dira deploys one Cloud Run service, `dira-orchestrator`. Interpretation,
+propagation, constraint solving, planning, policy, execution, and verification
+are separate stages inside that service, coordinated by a transactional
+Firestore ledger. A single service makes the deployed boundary inspectable
+and avoids claiming empty microservices. `max-instances=1` is used for the
+hackathon demo; Firestore transactional claims are the multi-worker safety
+boundary.
+
+The production mode uses:
+
+- Gemini via the Google GenAI SDK configured for Vertex AI and application
+  default credentials;
+- Firestore for commitments, edges, normalized-event deduplication, workflow
+  snapshots, flight recordings, controlled integrations, and the action
+  ledger;
+- a real service-account-managed Google Calendar, with Dira provenance in
+  private extended properties and fresh reads for verification;
+- Firestore-backed recruiter availability/booking and organization-task
+  surfaces that can be changed from the Cloud console during the demo; and
+- a Firestore outbound-message record. Consumer Gmail sending is not claimed.
+
+The Vercel dashboard calls Cloud Run through a same-origin Next.js route. The
+demo token remains server-only. Mutating endpoints compare that token in
+constant time; Cloud Run CORS is restricted to the configured dashboard
+origin. Health and status endpoints expose no credential.
 
 ## Durability model
 
-- **Action ledger** (outbox): every intent persisted before execution with an
-  idempotency key `workflow:type:target:desired_state`. Lifecycle
+- **Action ledger:** every intent is persisted before execution under an
+  idempotency key `workflow:type:target:desired_state`. Its lifecycle is
   `PLANNED → AUTHORIZED → PENDING_EXECUTION → EXECUTING →
-  EXECUTED_UNVERIFIED → VERIFIED`, failure branches
-  `FAILED_TRANSIENT (bounded retry) / FAILED_PERMANENT → REPLAN_REQUIRED /
-  STALE (revivable only through re-authorization)`.
-- **Workflow store**: run status, mutation, impacts, candidate records,
-  counters. A fresh worker rehydrates: initial state + persisted mutation +
-  all VERIFIED actions, reconciles in-flight actions by *reading the external
-  system*, then continues. Proven by the crash-resume chaos test.
+  EXECUTED_UNVERIFIED → VERIFIED`, with retry/replan/stale branches.
+- **Transactional claim:** Firestore compare-and-set means two workers cannot
+  claim the same pending action.
+- **Workflow store:** every run snapshot carries an update timestamp. A fresh
+  worker rehydrates state, reconciles in-flight actions by reading the target
+  system, and continues. The local chaos suite kills a run between external
+  success and verification and proves no duplicate mutation occurs.
+- **Event deduplication:** normalized events are keyed by event ID before the
+  repair loop starts.
 
-## Production topology (PRD §31–§32)
+## Replay modes
 
-Cloud Run services `dira-ingestor / orchestrator / executor / verifier`
-(shared Dockerfile in `infrastructure/cloud-run/`), Pub/Sub topics
-(`infrastructure/pubsub/topics.sh`), Firestore collections and transactional
-boundaries (`infrastructure/firestore/collections.md`), Secret Manager for
-OAuth/Gemini keys. In this build the execute/verify stages run in-process
-behind the same ledger protocol, and the dashboard deploys to Vercel — both
-logged in `DEVIATIONS.md`.
-
-## Google ADK migration path
-
-The loop's stages are discrete async calls, which is exactly the shape an ADK
-agent wants: register the four adapters as ADK tools, expose
-`interpretEmail`, `generateCandidatePlans` + `validatePlan`, and the ledger
-executor as tool-backed steps, and let the ADK agent own sequencing while the
-deterministic engines keep their authority. See DEVIATIONS.md #3 for why this
-build ships a native loop instead of an untestable wrapper.
-
-## Replay modes (PRD §39)
-
-| Mode | Interpretation | Tools | Status |
+| Mode | Interpretation | State and tools | Evidence claim |
 | --- | --- | --- | --- |
-| `deterministic` | stored fixtures | local adapters | implemented — CI, judges, zero credentials |
-| `live-model` | Gemini | local adapters | implemented — model-level integration testing |
-| `production` | Gemini via Vertex | Google APIs + controlled endpoints | documented seam (DEVIATIONS #13) — target for the cloud demo |
+| `deterministic` | stored interpretation | in-memory/file, stateful simulators | fully reproducible engine evidence; no live Google side effects |
+| `live-model` | Gemini Developer API or Vertex | local simulators | live semantic-model evaluation; no live Google side effects |
+| `production` | Gemini on Vertex AI | Firestore + real Google Calendar + controlled Firestore surfaces | implemented production path; requires an authorized GCP deployment |
+
+The dashboard asks `/api/runtime/status` which boundary is active and labels
+every judge-controlled run as `LIVE CLOUD`, `DETERMINISTIC EVIDENCE`, or
+`CLOUD UNAVAILABLE`.
+
+## Google ADK decision
+
+Dira uses the Google GenAI SDK, one of the hackathon's eligible Google agent
+frameworks. The orchestration loop remains native because deterministic
+authority, transactional recovery, and verification are the substance of the
+agent. An ADK wrapper that merely re-called those stages would add no
+behavior. The stages are discrete async functions and can be registered as
+ADK tools later without moving feasibility or authorization into the model.

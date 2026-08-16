@@ -16,17 +16,24 @@ const STATUS_TONE: Record<string, string> = {
   AUTHORIZED: 'neutral',
 };
 
+const SYSTEM_LABEL: Record<string, string> = {
+  calendar: 'calendar adapter',
+  gmail: 'message outbox',
+  organization: 'organization (controlled)',
+  recruiter: 'recruiter (controlled)',
+};
+
 export default async function ActivityPage() {
   const { ledger } = await getGoldenRunData();
 
   return (
     <main>
-      <h1 className="page-title">Activity — durable action ledger</h1>
+      <h1 className="page-title">Activity — reference action ledger</h1>
       <p className="page-sub">
-        Every external intent is persisted before execution and only becomes VERIFIED
-        after an independent read of external state. Tool success is never trusted alone;
+        Every adapter intent is persisted before execution and only becomes VERIFIED
+        after an independent state read. Tool success is never trusted alone;
         idempotency keys make redelivery and crash-resume duplicate-free. The 409 record
-        below is the injected failure the workflow recovered from.
+        below is the injected failure the deterministic reference workflow recovered from.
       </p>
       <div className="panel" style={{ overflowX: 'auto' }}>
         <table className="data">
@@ -44,7 +51,7 @@ export default async function ActivityPage() {
             {ledger.map((r) => (
               <tr key={r.actionId}>
                 <td>{r.action.summary}</td>
-                <td className="mono">{r.action.external_system}</td>
+                <td className="mono">{SYSTEM_LABEL[r.action.external_system] ?? r.action.external_system}</td>
                 <td>
                   <span className="mono">{r.policyVerdict}</span>
                   <div className="muted" style={{ fontSize: 12 }}>{r.policyRule}</div>
@@ -64,6 +71,11 @@ export default async function ActivityPage() {
           </tbody>
         </table>
       </div>
+      <p className="footnote">
+        This table is the deterministic baseline ledger. Production uses the same lifecycle
+        in Firestore; its Calendar target is real and its recruiter, organization, and
+        message-outbox targets are controlled integrations.
+      </p>
     </main>
   );
 }

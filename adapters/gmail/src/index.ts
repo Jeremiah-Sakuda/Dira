@@ -5,10 +5,9 @@ import type { GmailMessage, GmailTool } from '@dira/tool-contracts';
  * the seeded inbox; sendReply appends to the thread so verifyReply performs a
  * genuine independent read of "external" state.
  *
- * The production adapter (not yet implemented — DEVIATIONS.md #13) will
- * implement this same GmailTool contract with the Gmail API (readonly + send
- * scopes only), receiving push notifications via Pub/Sub watch — see
- * services/ingestor.
+ * Production intentionally uses a Firestore inbox/outbox adapter: it is a
+ * controlled integration surface and is not presented as Gmail delivery.
+ * See `firestore-outbox.ts` and DEVIATIONS.md #5.
  */
 export class FixtureGmailTool implements GmailTool {
   private messages: GmailMessage[] = [];
