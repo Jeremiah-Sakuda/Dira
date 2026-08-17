@@ -96,7 +96,9 @@ export class FirestoreActionLedger implements LedgerApi {
         return { record: existing, created: false };
       }
       const record: ActionRecord = {
-        actionId: `act_${this.docIdForKey(key).slice(0, 48)}`,
+        // Full key: a truncated id can collide (two notifications to the
+        // same recipient) and silently overwrite mirror entries.
+        actionId: `act_${this.docIdForKey(key)}`,
         workflowId,
         action,
         idempotencyKey: key,

@@ -157,8 +157,12 @@ const server = createServer(async (req, res) => {
         if (url.pathname === '/demo/trigger') {
           // Controlled webhook: inject the golden professor email, optionally
           // varied (?examHour=13|14|15) — the runtime variable for the video.
+          // Demo runs get a unique eventId per injection so a stale
+          // processing lease from a dead run can never wedge new demos
+          // (webhook /events keeps the caller's id: real dedup semantics).
           const examHour = Number(url.searchParams.get('examHour') ?? 14) as 13 | 14 | 15;
-          raw = buildGoldenFixture({ examHour }).trigger;
+          const fixtureTrigger = buildGoldenFixture({ examHour }).trigger;
+          raw = { ...fixtureTrigger, eventId: `${fixtureTrigger.eventId}-${Date.now()}` };
         } else if ((raw as { message?: { data?: string } })?.message?.data) {
           // Pub/Sub push envelope
           raw = safeJson(
@@ -192,7 +196,10 @@ const server = createServer(async (req, res) => {
         } else if (url.searchParams.get('examHour')) {
           variation = { examHour: Number(url.searchParams.get('examHour')) as 13 | 14 | 15 };
         }
-        const trigger = buildGoldenFixture(variation).trigger;
+        const fixtureTrigger = buildGoldenFixture(variation).trigger;
+        // Unique per-run eventId: a stale lease from a dead run must never
+        // wedge the next judge's demo.
+        const trigger = { ...fixtureTrigger, eventId: `${fixtureTrigger.eventId}-${Date.now()}` };
         cors(req, res);
         res.writeHead(200, {
           'content-type': 'text/event-stream',

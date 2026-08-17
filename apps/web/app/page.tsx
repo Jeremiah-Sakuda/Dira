@@ -78,7 +78,7 @@ export default async function SystemPage() {
       <p className="footnote">
         Runtime note: this overview is always the reproducible deterministic reference.
         {productionConfigured
-          ? ' The judge-controlled replay is connected server-to-server to Cloud Run, Vertex AI, Firestore, and Google Calendar.'
+          ? ' Production credentials are configured for this deployment; the Interventions page verifies live Cloud Run connectivity per run and labels the boundary.'
           : ' The judge-controlled replay currently uses stateful integration simulators; production credentials are not configured for this web deployment.'}{' '}
         Reproduce the reference with <span className="mono">make demo-replay</span>.
       </p>

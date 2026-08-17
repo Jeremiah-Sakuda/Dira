@@ -12,7 +12,10 @@ rehearsal succeeds repeatedly.
 - [ ] Vertex AI evaluation artifact saved with every case passing.
 - [ ] Google Calendar is open to the service-account-managed Dira calendar.
 - [ ] Firestore recruiter slots are open in the Cloud console.
-- [ ] Immediately before recording, flip the first recruiter slot to taken.
+- [ ] Know the failure mechanics: every run reseeds the world, and the default
+      scenario seeds the first recruiter slot as *listed-but-actually-taken*.
+      The 409 is a seeded stale-listing race — do NOT claim a manual flip
+      (a console flip would be clobbered by the reseed anyway).
 - [ ] Dashboard Interventions page shows `LIVE CLOUD`.
 - [ ] Default scenario has been rehearsed, then reset for a clean recording.
 - [ ] Browser zoom, notifications, 1080p capture, and microphone are checked.
@@ -46,9 +49,9 @@ Let the recorder show INTERPRET → PROPAGATE → FEASIBILITY (−3.6h) → PLAN
 POLICY → ACTION → ERROR 409 → OBSERVE → REPLAN → ACTION → VERIFY → RESOLVED
 (+1.3h). Point to the Vertex model/latency telemetry and the 409.
 
-> “Before recording, I flipped the first recruiter slot to taken in the
-> Firestore console — a controlled failure injection Dira has no way to know
-> about. Watch it hit the 409, refresh reality, and recover.”
+> “The seeded world *lists* that first slot as open — but it's actually
+> taken, a stale listing like real schedulers produce. Dira can only discover
+> that by acting. Watch it hit the 409, refresh reality, and recover.”
 
 **2:22–2:47 — external proof** *(quick tab tour)*
 

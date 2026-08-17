@@ -62,7 +62,13 @@ export default async function InterventionsPage() {
         </details>
 
         <div className="panel" style={{ overflowX: 'auto' }}>
-          <div className="section-label">Candidate plans — round 1</div>
+          <div className="section-label">
+            Candidate plans — deterministic reference, round 1
+          </div>
+          <p className="muted" style={{ fontSize: 12.5, marginBottom: 10 }}>
+            From the reproducible baseline run of the default scenario; a live
+            run above derives its own candidate set from the world it finds.
+          </p>
           <table className="data">
             <thead>
               <tr>
