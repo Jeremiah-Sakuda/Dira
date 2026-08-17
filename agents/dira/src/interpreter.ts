@@ -70,23 +70,43 @@ export class GeminiModelClient implements ModelClient {
         })
       : new GoogleGenAI({});
     const prompt = buildInterpretationPrompt(email, context);
-    const startedAt = Date.now();
-    const response = await ai.models.generateContent({
-      model: this.model,
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        temperature: 0,
-      },
-    });
-    this.lastCall = { model: this.model, latencyMs: Date.now() - startedAt, vertexai };
-    const text = response.text ?? '';
-    try {
-      return JSON.parse(text);
-    } catch {
-      return { malformed: text };
+
+    // Rate limits and transient backend errors get bounded backoff (PRD §28
+    // "transient tool failure"); anything else propagates to the caller's
+    // safe-stop handling.
+    const backoffsMs = [0, 2_000, 6_000];
+    let lastErr: unknown;
+    for (const backoff of backoffsMs) {
+      if (backoff > 0) await new Promise((r) => setTimeout(r, backoff));
+      try {
+        const startedAt = Date.now();
+        const response = await ai.models.generateContent({
+          model: this.model,
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            temperature: 0,
+          },
+        });
+        this.lastCall = { model: this.model, latencyMs: Date.now() - startedAt, vertexai };
+        const text = response.text ?? '';
+        try {
+          return JSON.parse(text);
+        } catch {
+          return { malformed: text };
+        }
+      } catch (err) {
+        lastErr = err;
+        if (!isTransientModelError(err)) throw err;
+      }
     }
+    throw lastErr;
   }
+}
+
+function isTransientModelError(err: unknown): boolean {
+  const s = String(err);
+  return /429|RESOURCE_EXHAUSTED|503|UNAVAILABLE|500|INTERNAL/.test(s);
 }
 
 export function buildInterpretationPrompt(
@@ -130,7 +150,12 @@ export function buildInterpretationPrompt(
 export interface InterpretOutcome {
   ok: boolean;
   result?: InterpretationResult;
-  failure?: 'MALFORMED_OUTPUT' | 'UNRESOLVED_ENTITY' | 'LOW_CONFIDENCE' | 'UNVERIFIED_SENDER';
+  failure?:
+    | 'MALFORMED_OUTPUT'
+    | 'UNRESOLVED_ENTITY'
+    | 'LOW_CONFIDENCE'
+    | 'UNVERIFIED_SENDER'
+    | 'MODEL_UNAVAILABLE';
   detail?: string;
   attempts: number;
 }
@@ -167,7 +192,21 @@ export async function interpretEmail(
   let lastDetail = '';
   while (attempts < maxAttempts) {
     attempts += 1;
-    const raw = await client.interpret(email, context);
+    let raw: unknown;
+    try {
+      raw = await client.interpret(email, context);
+    } catch (err) {
+      // The model backend is unreachable/rate-limited even after the
+      // client's own bounded retries: stop safely, never crash the worker.
+      return {
+        ok: false,
+        failure: 'MODEL_UNAVAILABLE',
+        detail:
+          'the interpretation model is temporarily unavailable (rate limit or backend error); ' +
+          'no actions were taken and the event is held for review',
+        attempts,
+      };
+    }
     const parsed = InterpretationResultSchema.safeParse(raw);
     if (!parsed.success) {
       lastDetail = parsed.error.issues.map((i) => i.message).join('; ');
