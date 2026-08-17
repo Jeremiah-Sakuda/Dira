@@ -13,7 +13,7 @@ import { buildGoldenFixture, type GoldenVariation } from '@dira/fixtures/golden'
  * Calendar mutations, controlled recruiter/org integrations.
  *
  * Endpoints
- *   GET  /healthz            liveness
+ *   GET  /health             liveness (/healthz is intercepted by GFE on run.app)
  *   GET  /status             seeded? calendar id, doc counts (production)
  *   POST /events             normalized RawEmailEvent (Pub/Sub push or webhook)
  *   POST /demo/reset         reseed the demo world (body: optional variation)
@@ -103,7 +103,10 @@ const server = createServer(async (req, res) => {
       res.writeHead(204).end();
       return;
     }
-    if (req.method === 'GET' && url.pathname === '/healthz') {
+    // Google Frontend intercepts /healthz on run.app URLs before it reaches
+    // the container, so the public liveness path is /health (both work
+    // locally).
+    if (req.method === 'GET' && (url.pathname === '/health' || url.pathname === '/healthz')) {
       json(req, res, 200, { ok: true, mode: MODE });
       return;
     }
