@@ -87,10 +87,13 @@ by the CI `golden-replay-20x: 20/20` artifact.
 ```text
 USER INTERVENTIONS      0
 COMMITMENTS DROPPED     0
-VERIFIED MUTATIONS     13
+VERIFIED MUTATIONS     10
 FAILURES RECOVERED      1
 GLOBAL SLACK        +1.3h
 ```
+
+(10 is the live production count; the deterministic reference verifies 13 —
+read the number off the on-screen outcome card if it differs.)
 
 > “Calendars tell you when plans collide. Dira repairs them.”
 
