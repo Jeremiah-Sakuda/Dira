@@ -200,9 +200,14 @@ export class DiraOrchestrator {
     const target = this.state.commitments[mutation.entity_id]!;
     this.run.mutation = mutation;
     this.run.mutationSummary = summarizeMutation(mutation, target.title);
-    this.recorder.record('INTERPRET', this.run.mutationSummary, {
+    const tele = this.model.lastCall;
+    const via = tele
+      ? ` — ${tele.model} on ${tele.vertexai ? 'Vertex AI' : 'the Gemini API'}, ${(tele.latencyMs / 1000).toFixed(1)}s`
+      : '';
+    this.recorder.record('INTERPRET', `${this.run.mutationSummary}${via}`, {
       mutation,
       modelClient: this.model.name,
+      gemini: tele,
       attempts: outcome.attempts,
     });
 
@@ -777,7 +782,11 @@ export function makeReplayClock(startIso: string): () => string {
 export interface RunMetrics {
   verifiedExternalMutations: number;
   distinctExternalSystems: number;
+  /** Permanent tool failures the run worked around — counted as *recovered*
+   * only when the workflow actually reached RESOLVED. */
   failuresRecovered: number;
+  /** Permanent tool failures observed, regardless of the final status. */
+  failuresEncountered: number;
   policyViolations: number;
   userInterventions: number;
   finalSlackMin: number | undefined;
@@ -789,7 +798,8 @@ export function computeRunMetrics(run: WorkflowRun, ledger: LedgerApi): RunMetri
   return {
     verifiedExternalMutations: verified.length,
     distinctExternalSystems: new Set(verified.map((r) => r.action.external_system)).size,
-    failuresRecovered: run.failuresRecovered,
+    failuresRecovered: run.status === 'RESOLVED' ? run.failuresRecovered : 0,
+    failuresEncountered: run.failuresRecovered,
     policyViolations: ledger
       .byWorkflow(run.id)
       .filter((r) => r.policyVerdict === 'DENY' || r.policyVerdict === 'REQUIRE_APPROVAL').length,

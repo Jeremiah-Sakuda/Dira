@@ -16,6 +16,7 @@ interface Entry {
 
 interface DoneSummary {
   status: string;
+  statusReason?: string;
   slackBeforeMin?: number;
   slackAfterMutationMin?: number;
   slackFinalMin?: number;
@@ -170,7 +171,7 @@ export function LiveReplay() {
             <span>
               {summary.status === 'RESOLVED'
                 ? 'Dira repaired the dependency cascade and verified the resulting state.'
-                : 'Dira stopped safely because no policy-compliant repair was available.'}
+                : `Dira stopped without executing further actions${summary.statusReason ? `: ${summary.statusReason}` : '.'}`}
             </span>
           </div>
           <div className="tile-row compact-tiles">

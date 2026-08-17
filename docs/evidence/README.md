@@ -21,5 +21,14 @@ curl -X POST "$URL/demo/trigger" -H "x-dira-demo-token: $TOKEN"
 curl        "$URL/eval/gemini"   -H "x-dira-demo-token: $TOKEN"
 ```
 
+**Why 10 verified mutations here vs 13 in the deterministic replay:** the
+count is whatever plan the solver derives for the world it finds. Both modes
+book the interview, mirror it to the calendar, delegate QA, notify the
+backup, move two personal blocks, and rebuild the study plan; the modes
+differ only in how many invalidated study reservations exist to delete and
+how many rebuilt blocks the placement produces. Both clear the PRD's ≥4 bar
+across ≥2 systems, and every counted mutation passed an independent
+verification read.
+
 The deterministic evidence (CI `golden-replay-20x`, 75 local tests, 8-way
 variation matrix) lives in the repository and requires no credentials.

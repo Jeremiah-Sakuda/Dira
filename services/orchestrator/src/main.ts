@@ -228,6 +228,7 @@ const server = createServer(async (req, res) => {
           });
           send('done', {
             status: result.run.status,
+            statusReason: result.run.statusReason,
             slackBeforeMin: result.run.slackBeforeMin,
             slackAfterMutationMin: result.run.slackAfterMutationMin,
             slackFinalMin: result.run.slackFinalMin,

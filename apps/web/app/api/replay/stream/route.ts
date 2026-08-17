@@ -86,6 +86,7 @@ export async function GET(request: Request): Promise<Response> {
         } else {
           send('done', {
             status: run.status,
+            statusReason: run.statusReason,
             slackBeforeMin: run.slackBeforeMin,
             slackAfterMutationMin: run.slackAfterMutationMin,
             slackFinalMin: run.slackFinalMin,

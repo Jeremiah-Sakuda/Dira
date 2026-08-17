@@ -21,6 +21,8 @@ import {
 export interface ModelClient {
   name: string;
   interpret(email: RawEmailEvent, context: InterpretationContext): Promise<unknown>;
+  /** Telemetry from the most recent call, when the client records it. */
+  lastCall?: { model: string; latencyMs: number; vertexai: boolean };
 }
 
 export interface InterpretationContext {

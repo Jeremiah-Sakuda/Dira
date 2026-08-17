@@ -11,7 +11,7 @@
   <!-- Triggers -->
   <rect x="34" y="96" width="220" height="64" rx="9" fill="#1f1f1e" stroke="#c3c2b7" stroke-width="1.4"/>
   <text x="50" y="122" fill="#ffffff" font-size="12.5" font-weight="bold">Professor / recruiter email</text>
-  <text x="50" y="140" fill="#8a897f" font-size="10.5">controlled webhook · POST /events</text>
+  <text x="50" y="140" fill="#8a897f" font-size="10.5">webhook · POST /events</text>
 
   <rect x="34" y="176" width="220" height="52" rx="9" fill="none" stroke="#6b6a61" stroke-width="1.3" stroke-dasharray="6 5"/>
   <text x="50" y="198" fill="#c3c2b7" font-size="11.5">Gmail watch → Pub/Sub push</text>
@@ -49,7 +49,7 @@
 
   <rect x="342" y="432" width="290" height="62" rx="8" fill="#232322" stroke="#4a4a46" stroke-width="1.2"/>
   <text x="356" y="454" fill="#ffffff" font-size="11.5" font-weight="bold">Flight recorder</text>
-  <text x="356" y="470" fill="#8a897f" font-size="10">structured decisions only · streamed to dashboard</text>
+  <text x="356" y="470" fill="#8a897f" font-size="10">structured decisions only · streamed live</text>
   <text x="356" y="484" fill="#8a897f" font-size="10">persisted to workflow_steps/</text>
 
   <!-- External systems -->
@@ -70,7 +70,7 @@
   <text x="728" y="334" fill="#8a897f" font-size="10">notification outbox</text>
 
   <rect x="712" y="366" width="214" height="56" rx="9" fill="none" stroke="#6b6a61" stroke-width="1.3" stroke-dasharray="6 5"/>
-  <text x="728" y="388" fill="#c3c2b7" font-size="11.5">Gmail send · real recruiter API</text>
+  <text x="728" y="388" fill="#c3c2b7" font-size="11.5">Gmail send · recruiter API</text>
   <text x="728" y="404" fill="#8a897f" font-size="10">seam: same ToolSet contract</text>
 
   <rect x="712" y="442" width="214" height="72" rx="9" fill="#1f1f1e" stroke="#c3c2b7" stroke-width="1.4"/>
