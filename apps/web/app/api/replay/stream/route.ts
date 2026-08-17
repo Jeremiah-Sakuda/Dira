@@ -18,25 +18,11 @@ export async function GET(request: Request): Promise<Response> {
   const demoToken = process.env.DIRA_DEMO_TOKEN;
 
   if (cloudUrl && demoToken) {
-    const authHeaders = {
-      'content-type': 'application/json',
-      'x-dira-demo-token': demoToken,
-    };
-    const reset = await fetch(`${cloudUrl}/demo/reset`, {
-      method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify(scenario.variation),
-      cache: 'no-store',
-    });
-    if (!reset.ok) {
-      return Response.json(
-        { error: `Cloud reset failed (${reset.status})` },
-        { status: 502 },
-      );
-    }
-
-    const examHour = scenario.variation.examHour ?? 14;
-    const upstream = await fetch(`${cloudUrl}/demo/stream?examHour=${examHour}`, {
+    // One request: the service reseeds inside its own serialized turn (and
+    // narrates it), so a judge's run can never be wiped by another judge's
+    // reset and there is no silent seeding gap before the stream starts.
+    const variation = encodeURIComponent(JSON.stringify(scenario.variation));
+    const upstream = await fetch(`${cloudUrl}/demo/stream?variation=${variation}`, {
       headers: { 'x-dira-demo-token': demoToken },
       cache: 'no-store',
     });

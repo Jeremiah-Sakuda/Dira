@@ -217,9 +217,14 @@ npm --workspace apps/web run dev   # dashboard on :3000
 
 ## Known limitations
 
-- Production code is implemented but this checkout has no authorized Dira
-  Google Cloud project or active gcloud account; no live deployment or Gemini
-  evaluation artifact is claimed until those credentials are supplied.
+- The production deployment is live (project `dira-agentic-2026`, Cloud Run
+  `dira-orchestrator`; evidence in [docs/evidence/](docs/evidence/)). It is a
+  single shared demo world sized for one run at a time; the service
+  serializes concurrent judge runs rather than sharding worlds per viewer.
+- Verified-mutation counts vary with the plan the solver derives for the
+  seeded world (13 in the deterministic reference, 10 in the captured
+  production run); both clear the PRD's ≥4 bar and every mutation is
+  independently verified before it counts.
 - Gmail delivery is a Firestore outbox rather than a consumer Gmail send.
   Recruiter and organization systems are controlled Firestore integrations,
   clearly labeled in the UI and architecture.

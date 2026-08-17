@@ -173,6 +173,17 @@ export async function handleProductionEvent(
     // Persist artifacts: flight recording + the updated commitment graph.
     await saveFlight(db, run.id, recorder.all());
     await saveDomainState(db, orchestrator.state);
+    // Lifetime counter in dira_meta (never cleared by reseeds), so /status
+    // reflects real usage instead of the perpetually-reset workflow count.
+    const { FieldValue } = await import('@google-cloud/firestore');
+    await db.collection('dira_meta').doc('stats').set(
+      {
+        totalRuns: FieldValue.increment(1),
+        lastRunAtIso: new Date().toISOString(),
+        lastRunStatus: run.status,
+      },
+      { merge: true },
+    );
     await eventRef.set({
       status: 'COMPLETED',
       workflowId: run.id,
@@ -214,17 +225,21 @@ export async function productionStatus(): Promise<{
   seeded: boolean;
   commitments?: number;
   workflowRuns?: number;
+  totalRuns?: number;
 }> {
   const db = await getFirestoreDb();
   const cal = await db.collection('dira_meta').doc('calendar').get();
   if (!cal.exists) return { seeded: false };
-  const [commitments, runs] = await Promise.all([
+  const [commitments, runs, stats] = await Promise.all([
     db.collection('commitments').count().get(),
     db.collection('workflow_runs').count().get(),
+    db.collection('dira_meta').doc('stats').get(),
   ]);
   return {
     seeded: true,
     commitments: commitments.data().count,
+    // workflow_runs is cleared on every reseed; totalRuns survives resets.
     workflowRuns: runs.data().count,
+    totalRuns: stats.exists ? ((stats.data() as { totalRuns?: number }).totalRuns ?? 0) : 0,
   };
 }

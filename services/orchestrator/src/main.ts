@@ -83,6 +83,32 @@ const safeJson = (s: string): unknown => {
   }
 };
 
+/**
+ * The production demo is ONE shared world (one calendar, one Firestore
+ * state). Concurrent judges must never interleave reseeds with in-flight
+ * runs, so every world-touching operation is serialized through this queue;
+ * later arrivals wait their turn, and a bounded queue turns pile-ups into a
+ * polite 429 instead of corrupted runs.
+ */
+class BusyError extends Error {
+  override name = 'BusyError';
+}
+let worldChain: Promise<unknown> = Promise.resolve();
+let worldQueueDepth = 0;
+const WORLD_MAX_QUEUE = 2;
+const isWorldBusy = () => worldQueueDepth > 0;
+function serialized<T>(fn: () => Promise<T>): Promise<T> {
+  if (worldQueueDepth > WORLD_MAX_QUEUE) {
+    throw new BusyError('demo world busy: too many queued runs');
+  }
+  worldQueueDepth++;
+  const result = worldChain.then(fn).finally(() => {
+    worldQueueDepth--;
+  });
+  worldChain = result.catch(() => {});
+  return result;
+}
+
 async function handleLocalEvent(raw: unknown) {
   const parsed = RawEmailEventSchema.parse(raw);
   const fixture = buildGoldenFixture();
@@ -121,7 +147,7 @@ const server = createServer(async (req, res) => {
       if (req.method === 'POST' && url.pathname === '/demo/reset') {
         if (!requireAuthorization(req, res)) return;
         const body = (safeJson(await readBody(req)) ?? {}) as GoldenVariation;
-        const seeded = await production.seedProduction(body);
+        const seeded = await serialized(() => production.seedProduction(body));
         json(req, res, 200, { reseeded: true, ...seeded });
         return;
       }
@@ -140,7 +166,7 @@ const server = createServer(async (req, res) => {
           );
         }
         const trigger = RawEmailEventSchema.parse(raw);
-        const result = await production.handleProductionEvent(trigger);
+        const result = await serialized(() => production.handleProductionEvent(trigger));
         console.log(
           JSON.stringify({
             severity: 'INFO',
@@ -155,8 +181,18 @@ const server = createServer(async (req, res) => {
       }
       if (req.method === 'GET' && url.pathname === '/demo/stream') {
         if (!requireAuthorization(req, res)) return;
-        const examHour = Number(url.searchParams.get('examHour') ?? 14) as 13 | 14 | 15;
-        const trigger = buildGoldenFixture({ examHour }).trigger;
+        // Scenario variation arrives as URI-encoded JSON; the reseed happens
+        // INSIDE this stream's serialized turn, so a judge's run can never be
+        // wiped by another judge's reset, and the seeding phase is narrated
+        // instead of appearing as dead air.
+        let variation: GoldenVariation = {};
+        const variationRaw = url.searchParams.get('variation');
+        if (variationRaw) {
+          variation = (safeJson(variationRaw) ?? {}) as GoldenVariation;
+        } else if (url.searchParams.get('examHour')) {
+          variation = { examHour: Number(url.searchParams.get('examHour')) as 13 | 14 | 15 };
+        }
+        const trigger = buildGoldenFixture(variation).trigger;
         cors(req, res);
         res.writeHead(200, {
           'content-type': 'text/event-stream',
@@ -166,8 +202,23 @@ const server = createServer(async (req, res) => {
         const send = (event: string, data: unknown) => {
           if (!res.writableEnded) res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
         };
+        let syntheticSeq = 0;
+        const note = (message: string) => ({
+          seq: --syntheticSeq,
+          atIso: new Date().toISOString(),
+          phase: 'EVENT',
+          message,
+        });
         try {
-          const result = await production.handleProductionEvent(trigger, (entry) => send('entry', entry));
+          if (isWorldBusy()) {
+            send('entry', note('Another run is in flight on the shared demo world — this run is queued and starts automatically.'));
+          }
+          const result = await serialized(async () => {
+            send('entry', note('Reseeding the demo world (Firestore state + real Google Calendar)…'));
+            const seeded = await production.seedProduction(variation);
+            send('entry', note(`World reseeded: ${seeded.seededEvents} calendar events restored, scenario applied.`));
+            return production.handleProductionEvent(trigger, (entry) => send('entry', entry));
+          });
           send('done', {
             status: result.run.status,
             slackBeforeMin: result.run.slackBeforeMin,
@@ -180,7 +231,7 @@ const server = createServer(async (req, res) => {
             calendarId: result.calendarId,
           });
         } catch (err) {
-          send('error', { message: String(err) });
+          send('error', { message: friendlyError(err) });
         } finally {
           res.end();
         }
@@ -217,9 +268,24 @@ const server = createServer(async (req, res) => {
     json(req, res, 404, { error: 'not found' });
   } catch (err) {
     console.error(JSON.stringify({ severity: 'ERROR', msg: String(err) }));
-    const code = err instanceof Error && err.name === 'EventAlreadyProcessingError' ? 409 : 500;
-    json(req, res, code, { error: String(err) });
+    const code =
+      err instanceof Error && err.name === 'EventAlreadyProcessingError'
+        ? 409
+        : err instanceof BusyError
+          ? 429
+          : 500;
+    json(req, res, code, { error: friendlyError(err) });
   }
 });
+
+function friendlyError(err: unknown): string {
+  if (err instanceof BusyError) {
+    return 'The shared demo world is busy with queued runs — try again in about a minute.';
+  }
+  if (err instanceof Error && err.name === 'EventAlreadyProcessingError') {
+    return 'This event is already being processed by another run — wait for it to finish, then run again.';
+  }
+  return String(err);
+}
 
 server.listen(PORT, () => console.log(`dira-orchestrator listening on :${PORT} (mode: ${MODE})`));

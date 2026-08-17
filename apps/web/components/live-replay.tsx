@@ -151,6 +151,16 @@ export function LiveReplay() {
           This mode executes the real orchestration, constraint, policy, ledger, replan, and verification code against stateful integration simulators. It does not claim live Google side effects. Configure the server-only Cloud Run URL and demo token to switch this panel to production.
         </p>
       )}
+      {runtime && runtime.mode === 'production' && (
+        <p className="evidence-note">
+          Live cloud boundary: Gemini interprets on Vertex AI and the Calendar
+          mutations land on a real Google Calendar, verified by independent
+          re-reads. Recruiter availability, organization ownership, and the
+          notification outbox are controlled Firestore integration surfaces —
+          durable test doubles, not third-party products. One shared demo
+          world: concurrent runs are serialized.
+        </p>
+      )}
       {error && <p className="error-note" role="alert">{error}</p>}
 
       {summary && (
