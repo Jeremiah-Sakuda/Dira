@@ -46,8 +46,9 @@ Let the recorder show INTERPRET → PROPAGATE → FEASIBILITY (−3.6h) → PLAN
 POLICY → ACTION → ERROR 409 → OBSERVE → REPLAN → ACTION → VERIFY → RESOLVED
 (+1.3h). Point to the Vertex model/latency telemetry and the 409.
 
-> “That slot was taken just before this run. Dira did not know that. Watch it
-> refresh reality and recover.”
+> “Before recording, I flipped the first recruiter slot to taken in the
+> Firestore console — a controlled failure injection Dira has no way to know
+> about. Watch it hit the 409, refresh reality, and recover.”
 
 **2:22–2:47 — external proof** *(quick tab tour)*
 
