@@ -41,7 +41,7 @@ file. The default replay needs no credential.
 The Vercel browser never receives the demo token. A same-origin Next.js route
 adds it on the server when proxying to Cloud Run. Production mutation and
 evaluation routes require a constant-time token match; `/runs/latest` is also
-protected. CORS is restricted to `DIRA_ALLOWED_ORIGIN`. Public `/healthz` and
+protected. CORS is restricted to `DIRA_ALLOWED_ORIGIN`. Public `/health` and
 `/status` responses contain only mode/readiness/count data, never the Calendar
 ID, token, or raw workflow content.
 
