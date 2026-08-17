@@ -45,9 +45,12 @@ Select **48-Hour Shock**, briefly point to the other counterfactuals, and click
 
 **0:42–2:22 — unedited execution** *(one take, no cuts)*
 
-Let the recorder show INTERPRET → PROPAGATE → FEASIBILITY (−3.6h) → PLAN →
-POLICY → ACTION → ERROR 409 → OBSERVE → REPLAN → ACTION → VERIFY → RESOLVED
-(+1.3h). Point to the Vertex model/latency telemetry and the 409.
+The run narrates its own setup first (“Reseeding the demo world — Firestore
+state + real Google Calendar…”), then the recorder shows INTERPRET (with the
+inline `gemini-3.5-flash on Vertex AI, ~7s` telemetry) → PROPAGATE →
+FEASIBILITY (−3.6h) → PLAN → POLICY → ACTION → ERROR 409 → OBSERVE → REPLAN
+→ ACTION → VERIFY → RESOLVED (+1.3h). Point at the Vertex telemetry when
+INTERPRET lands and at the 409 when it hits.
 
 > “The seeded world *lists* that first slot as open — but it's actually
 > taken, a stale listing like real schedulers produce. Dira can only discover
