@@ -238,10 +238,14 @@ npm --workspace apps/web run dev   # dashboard on :3000
 
 ## Hackathon disclosure
 
-Built for the Google All Things Agentic Hackathon (Taskmaster track).
-Synthetic identities throughout (Prof. Elena Chen, recruiter Jordan Lee,
-teammate Maya Okafor). Deviations from the product spec are logged with
-justifications in [`DEVIATIONS.md`](DEVIATIONS.md).
+Built for the Google All Things Agentic Hackathon (Taskmaster track), newly
+created within the submission window. Synthetic identities throughout
+(Prof. Elena Chen, recruiter Jordan Lee, teammate Maya Okafor). Development
+used AI coding assistance (Claude Code) under the author's direction, per
+the contest's tooling-disclosure rule; open-source dependencies (TypeScript,
+Next.js, zod, fast-check, Vitest, googleapis, @google-cloud/firestore,
+@google/genai) are used under their licenses. Deviations from the product
+spec are logged with justifications in [`DEVIATIONS.md`](DEVIATIONS.md).
 
 ## Design notes
 
