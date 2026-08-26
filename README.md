@@ -70,6 +70,21 @@ make replay-20x         # reliability evidence: 20/20 consecutive passes
 make test               # unit + integration + property + chaos suites
 ```
 
+## Evidence manifest
+
+Every headline claim, with where a judge can see it proven:
+
+| Claim | Judge-visible proof |
+| --- | --- |
+| Gemini 3.5 on Vertex AI (real inference) | `docs/evidence/gemini-live-eval.json` (8/8, `vertexai: true`, per-case latency) · the live `INTERPRET` flight line names the model + latency inline |
+| Real Google Calendar actions | Live run's before/after table + the moved events on the shared demo calendar · [`adapters/calendar/src/google-calendar.ts`](adapters/calendar/src/google-calendar.ts) |
+| Replanning after a 409 | Live flight recorder (`ERROR → OBSERVE → REPLAN → ACTION → VERIFY`) · [`docs/evidence/production-run.json`](docs/evidence/production-run.json) |
+| Crash-safe execution | `tests/chaos/*` + the CI `chaos-tests` job |
+| 10/10 production reliability | [`docs/evidence/production-10x.json`](docs/evidence/production-10x.json) |
+| 20/20 deterministic reliability | CI `golden-replay-20x` artifact |
+| Prompt-injection & forged-sender safety | `docs/evidence/gemini-live-eval.json` (blocked cases) · `tests/integration/interpretation-pipeline.test.ts` |
+| Authorization is deterministic, not model-driven | Each `POLICY` flight line names the rule and the stored fact that authorized it · [`packages/policy-engine`](packages/policy-engine) |
+
 ## What makes Dira different
 
 - **It repairs, it doesn't remind.** The deliverable is restored feasibility,

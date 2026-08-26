@@ -237,6 +237,7 @@ const server = createServer(async (req, res) => {
             runtime: 'production',
             gemini: result.gemini,
             calendarId: result.calendarId,
+            changes: result.changes,
           });
         } catch (err) {
           send('error', { message: friendlyError(err) });

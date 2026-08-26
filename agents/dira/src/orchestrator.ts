@@ -514,7 +514,11 @@ export class DiraOrchestrator {
       let created = 0;
       let revived = 0;
       for (const [seq, { action, decision }] of actions.entries()) {
-        this.recorder.record('POLICY', `${decision.verdict}: ${action.summary} [${decision.rule}]`);
+        this.recorder.record(
+          'POLICY',
+          `${decision.verdict}: ${action.summary} [${decision.rule}] · authorized by ${action.provenance.join(', ')}`,
+          { verdict: decision.verdict, rule: decision.rule, provenance: action.provenance },
+        );
         const { record, created: isNew } = await this.ledger.persistIntent(
           this.run.id,
           action,
@@ -807,4 +811,72 @@ export function computeRunMetrics(run: WorkflowRun, ledger: LedgerApi): RunMetri
     finalSlackMin: run.slackFinalMin,
     status: run.status,
   };
+}
+
+/** One externally-visible change a run produced, for a judge-facing before/after. */
+export interface SurfaceChange {
+  surface: string;
+  before: string;
+  after: string;
+  verification: string;
+}
+
+function ownerName(state: DomainState, ownerId: string): string {
+  const fromPeople = state.people[ownerId]?.name?.split(' ')[0];
+  if (fromPeople) return fromPeople;
+  const bare = ownerId.replace(/^user-/, '');
+  return bare.charAt(0).toUpperCase() + bare.slice(1);
+}
+
+function verificationFor(system: string | undefined): string {
+  switch (system) {
+    case 'organization': return 'Org tracker re-read';
+    case 'recruiter': return 'Recruiter + calendar re-read';
+    case 'gmail': return 'Outbox re-read';
+    default: return 'Calendar re-read';
+  }
+}
+
+/**
+ * Diff the world before and after a run into a compact, judge-facing table
+ * (PRD §48 auditability): what each external surface was, what it became, and
+ * how the change was independently verified. Reservations are collapsed into
+ * a single "study plan" row.
+ */
+export function summarizeSurfaceChanges(before: DomainState, after: DomainState): SurfaceChange[] {
+  const label = (min: number | undefined) =>
+    min === undefined ? 'unscheduled' : minutesToLabel(min, before.horizonStartIso);
+  const changes: SurfaceChange[] = [];
+
+  for (const [id, b] of Object.entries(before.commitments)) {
+    if (b.reservesEffortFor) continue;
+    const a = after.commitments[id];
+    if (!a) continue;
+    if (b.kind !== 'effort' && b.startMin !== a.startMin) {
+      changes.push({ surface: b.title, before: label(b.startMin), after: label(a.startMin), verification: verificationFor(b.externalSystem) });
+    } else if (b.owner !== a.owner) {
+      changes.push({ surface: b.title, before: ownerName(before, b.owner), after: ownerName(after, a.owner), verification: verificationFor(b.externalSystem) });
+    } else if (b.status !== a.status && a.status === 'DROPPED') {
+      changes.push({ surface: b.title, before: 'scheduled', after: 'dropped', verification: verificationFor(b.externalSystem) });
+    }
+  }
+
+  // Study-plan reservations collapse into one row when any prep block moved.
+  const resKey = (s: DomainState) =>
+    Object.values(s.commitments)
+      .filter((c) => c.reservesEffortFor && c.status !== 'DROPPED')
+      .map((c) => c.startMin)
+      .sort((x, y) => (x ?? 0) - (y ?? 0))
+      .join(',');
+  const beforeCount = Object.values(before.commitments).filter((c) => c.reservesEffortFor && c.status !== 'DROPPED').length;
+  const afterCount = Object.values(after.commitments).filter((c) => c.reservesEffortFor && c.status !== 'DROPPED').length;
+  if (resKey(before) !== resKey(after)) {
+    changes.push({
+      surface: 'Study plan',
+      before: `${beforeCount} prep block${beforeCount === 1 ? '' : 's'}`,
+      after: `${afterCount} block${afterCount === 1 ? '' : 's'} rebuilt before the exam`,
+      verification: 'Calendar re-read',
+    });
+  }
+  return changes;
 }

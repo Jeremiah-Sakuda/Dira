@@ -5,11 +5,19 @@
 
 ## Inspiration
 
-Every calendar assumes the future stays still. It does not. As a student
-juggling classes, recruiting, and a student organization, the failure mode
-was never forgetting a task. It was one email moving one exam and six other
-commitments silently becoming impossible. Existing tools surface a conflict;
-they do not repair the consequences.
+Last term a professor moved a midterm forward by two days, and my week quietly
+fell apart: the exam now collided with a recruiting interview, my prep hours no
+longer fit before the test, a club deliverable I owned overlapped the new study
+time, and the post-exam buffer I keep before interviews was gone. Google
+Calendar and my task app both showed me the collision — in red — and then did
+nothing. I spent an hour manually rebooking the interview, begging a teammate to
+take the club task, and rebuilding my study plan by hand.
+
+That is the real friction: not remembering what I have to do, but recomputing
+everything *else* that breaks when one commitment moves. Every calendar assumes
+the future stays still. It does not. Existing tools surface the conflict; they
+do not repair the consequences. Dira is the system I wanted that night — one
+that treats a schedule change as an event to *act on*, not just display.
 
 ## What it does
 

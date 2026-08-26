@@ -1,4 +1,4 @@
-import { buildReplayRuntime } from '@dira/agent';
+import { buildReplayRuntime, summarizeSurfaceChanges } from '@dira/agent';
 import { buildGoldenFixture } from '@dira/fixtures/golden';
 import { getDemoScenario } from '../../../../lib/demo-scenarios';
 
@@ -54,6 +54,7 @@ export async function GET(request: Request): Promise<Response> {
       try {
         const fixture = buildGoldenFixture(scenario.variation);
         const runtime = await buildReplayRuntime(fixture);
+        const beforeState = structuredClone(fixture.state);
         const queue: unknown[] = [];
         runtime.recorder.onEntry((entry) => queue.push(entry));
 
@@ -93,6 +94,7 @@ export async function GET(request: Request): Promise<Response> {
             failuresRecovered: run.failuresRecovered,
             userInterventions: run.userInterventions,
             runtime: 'deterministic',
+            changes: summarizeSurfaceChanges(beforeState, runtime.orchestrator.state),
           });
         }
       } catch (err) {

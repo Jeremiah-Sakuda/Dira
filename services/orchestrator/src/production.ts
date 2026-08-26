@@ -4,7 +4,9 @@ import {
   DiraOrchestrator,
   GeminiModelClient,
   computeRunMetrics,
+  summarizeSurfaceChanges,
   type RunMetrics,
+  type SurfaceChange,
   type WorkflowRun,
 } from '@dira/agent';
 import {
@@ -45,6 +47,7 @@ export interface ProductionRunResult {
   flight: FlightEntry[];
   gemini?: { model: string; latencyMs: number; vertexai: boolean };
   calendarId: string;
+  changes: SurfaceChange[];
 }
 
 export class EventAlreadyProcessingError extends Error {
@@ -153,6 +156,7 @@ export async function handleProductionEvent(
         metrics: computeRunMetrics(existing, ledger),
         flight: await loadFlight(db, existing.id),
         calendarId,
+        changes: [],
       };
     }
     throw new EventAlreadyProcessingError(`event ${trigger.eventId} is already processing`);
@@ -165,10 +169,14 @@ export async function handleProductionEvent(
     if (onEntry) recorder.onEntry(onEntry);
     const ledger = await FirestoreActionLedger.open(db);
 
+    // Snapshot the world before the run so we can diff the external surfaces
+    // the orchestrator mutates it in place during interpretation.
+    const beforeState = structuredClone(state);
     const orchestrator = new DiraOrchestrator(
       state, tools, ledger, recorder, model, workflowStore,
     );
     const run = await orchestrator.handleEvent(trigger);
+    const changes = summarizeSurfaceChanges(beforeState, orchestrator.state);
 
     // Persist artifacts: flight recording + the updated commitment graph.
     await saveFlight(db, run.id, recorder.all());
@@ -197,6 +205,7 @@ export async function handleProductionEvent(
       flight: recorder.all(),
       gemini: model.lastCall,
       calendarId,
+      changes,
     };
   } catch (error) {
     await eventRef.set({

@@ -34,9 +34,20 @@ export default async function SystemPage() {
           <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
             Dira monitors commitments across school, career, organizations and personal
             life; when the outside world moves, it repairs the consequences. This overview
-            is rendered from a fresh deterministic engine run. Open Interventions to choose
-            a scenario and see whether the production cloud runtime is connected.
+            is a reproducible deterministic snapshot — run the real thing live below.
           </p>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Link
+              href="/interventions"
+              className="btn"
+              style={{ textDecoration: 'none', fontSize: 15, padding: '11px 20px' }}
+            >
+              ▶ Run Dira live on Google Cloud
+            </Link>
+            {productionConfigured && (
+              <StatusPill kind="good" label="LIVE CLOUD · Vertex + Calendar" />
+            )}
+          </div>
         </div>
 
         <div className="panel">

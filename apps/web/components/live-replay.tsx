@@ -7,11 +7,28 @@ import {
 } from '../lib/demo-scenarios';
 import { PHASE_TONE, StatusPill, Tile } from './status';
 
+interface CandidateSummary {
+  id: string;
+  label: string;
+  acceptable: boolean;
+  costTotal: number;
+  slackMinutes: number;
+  rejectionReason?: string;
+}
+
 interface Entry {
   seq: number;
   atIso: string;
   phase: string;
   message: string;
+  data?: { candidates?: CandidateSummary[] };
+}
+
+interface SurfaceChange {
+  surface: string;
+  before: string;
+  after: string;
+  verification: string;
 }
 
 interface DoneSummary {
@@ -24,7 +41,13 @@ interface DoneSummary {
   userInterventions: number;
   runtime: 'production' | 'deterministic';
   gemini?: { model: string; latencyMs: number; vertexai: boolean };
+  changes?: SurfaceChange[];
 }
+
+const fmtSlackSigned = (minutes?: number) =>
+  minutes === undefined
+    ? '—'
+    : `${minutes >= 0 ? '+' : '−'}${(Math.abs(minutes) / 60).toFixed(1)}h`;
 
 interface RuntimeStatus {
   mode: 'production' | 'deterministic' | 'unavailable';
@@ -103,6 +126,9 @@ export function LiveReplay() {
   }, [scenario]);
 
   const selected = DEMO_SCENARIOS[scenario];
+  // The planner's first round, as this run computed it — live evidence that
+  // the repair is derived from state, not replayed.
+  const liveCandidates = entries.find((e) => e.phase === 'PLAN' && e.data?.candidates?.length)?.data?.candidates ?? [];
   const runtimeKind = !runtime
     ? 'neutral'
     : runtime.mode === 'production'
@@ -184,6 +210,54 @@ export function LiveReplay() {
             {summary.failuresRecovered} tool failure{summary.failuresRecovered === 1 ? '' : 's'} {summary.status === 'RESOLVED' ? 'handled' : 'observed'} · runtime: {summary.runtime}
             {summary.gemini ? ` · ${summary.gemini.model} on Vertex AI · ${summary.gemini.latencyMs} ms` : ''}
           </p>
+
+          {summary.changes && summary.changes.length > 0 && (
+            <div className="change-table" style={{ overflowX: 'auto', marginTop: 16 }}>
+              <div className="section-label">What actually changed — before vs after</div>
+              <table className="data">
+                <thead>
+                  <tr><th>Surface</th><th>Before</th><th>After</th><th>Verified by</th></tr>
+                </thead>
+                <tbody>
+                  {summary.changes.map((c) => (
+                    <tr key={c.surface}>
+                      <td>{c.surface}</td>
+                      <td className="mono">{c.before}</td>
+                      <td className="mono" style={{ color: 'var(--accent)' }}>{c.after}</td>
+                      <td className="muted">{c.verification}</td>
+                    </tr>
+                  ))}
+                  <tr>
+                    <td>Global slack</td>
+                    <td className="mono">{fmtSlackSigned(summary.slackAfterMutationMin)}</td>
+                    <td className="mono" style={{ color: 'var(--status-good)' }}>{fmtSlackSigned(summary.slackFinalMin)}</td>
+                    <td className="muted">Solver recomputation</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {liveCandidates.length > 0 && (
+        <div className="change-table" style={{ overflowX: 'auto', marginTop: 16 }}>
+          <div className="section-label">Candidate repairs this run evaluated</div>
+          <table className="data">
+            <thead>
+              <tr><th>Plan</th><th>Cost</th><th>Restored slack</th><th>Verdict</th></tr>
+            </thead>
+            <tbody>
+              {liveCandidates.map((c) => (
+                <tr key={c.id}>
+                  <td>{c.label}</td>
+                  <td className="mono">{Number.isFinite(c.costTotal) ? c.costTotal : '∞'}</td>
+                  <td className="mono">{fmtSlackSigned(c.slackMinutes)}</td>
+                  <td>{c.acceptable ? <StatusPill kind="good" label="selected pool" /> : <span className="muted">{c.rejectionReason}</span>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
