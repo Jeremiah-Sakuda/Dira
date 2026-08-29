@@ -34,6 +34,7 @@ interface SurfaceChange {
 interface DoneSummary {
   status: string;
   statusReason?: string;
+  workflowId?: string;
   slackBeforeMin?: number;
   slackAfterMutationMin?: number;
   slackFinalMin?: number;
@@ -210,6 +211,15 @@ export function LiveReplay() {
             {summary.failuresRecovered} tool failure{summary.failuresRecovered === 1 ? '' : 's'} {summary.status === 'RESOLVED' ? 'handled' : 'observed'} · runtime: {summary.runtime}
             {summary.gemini ? ` · ${summary.gemini.model} on Vertex AI · ${summary.gemini.latencyMs} ms` : ''}
           </p>
+          {summary.workflowId && (
+            <p className="footnote mono" style={{ marginTop: 4 }}>
+              workflow&nbsp;
+              <span style={{ color: 'var(--text-primary)', userSelect: 'all' }}>{summary.workflowId}</span>
+              {summary.runtime === 'production'
+                ? ' — matches the Cloud Run log and the Firestore ledger for this run'
+                : ' — deterministic reference run'}
+            </p>
+          )}
 
           {summary.changes && summary.changes.length > 0 && (
             <div className="change-table" style={{ overflowX: 'auto', marginTop: 16 }}>

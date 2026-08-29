@@ -1,7 +1,7 @@
 # Dira — one-command entry points for judges and developers.
 # Everything here runs credential-free: no Google OAuth, no cloud project needed.
 
-.PHONY: install demo-replay demo-variations replay-20x test typecheck ci web
+.PHONY: install demo-replay demo-variations replay-20x demo-video test typecheck ci web
 
 install:
 	npm install
@@ -17,6 +17,12 @@ demo-variations:
 # Reliability evidence: 20 consecutive deterministic replays.
 replay-20x:
 	npm run demo:replay:20x
+
+# A 72-second, captioned evidence walkthrough generated only from checked-in
+# deterministic results. It is intentionally not a substitute for the final
+# live-cloud recording described in docs/demo/video-script.md.
+demo-video:
+	bash scripts/render-demo-video.sh
 
 test:
 	npm test

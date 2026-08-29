@@ -70,6 +70,26 @@ make replay-20x         # reliability evidence: 20/20 consecutive passes
 make test               # unit + integration + property + chaos suites
 ```
 
+## Judge quick-start — one minute to the proof
+
+1. Open the [interactive evidence](https://dira-phi.vercel.app) and select
+   **48-Hour Shock**. Confirm its runtime badge before running it: only a
+   `LIVE CLOUD` label substantiates live Google side effects; a
+   `DETERMINISTIC EVIDENCE` label is reproducible engine evidence.
+2. Run the scenario and look for the decisive sequence:
+   `ERROR 409 → OBSERVE → REPLAN → VERIFY → RESOLVED`. The selected repair is
+   derived from the current world rather than a scenario ID.
+3. Inspect the **What actually changed** table: it shows before/after state
+   and the verification method for each mutation. The canonical outcome
+   restores Global Slack from −3.6h to +1.3h without a human action.
+4. Select **No slots available**. Dira must stop safely rather than invent an
+   appointment. Select **Alternate task owner** to confirm the stored graph
+   edge, not a prompt, determines who receives the delegation.
+5. For credential-free verification, run `make demo-replay` (18 assertions),
+   then `make replay-20x`. A short captioned evidence walkthrough is generated
+   with `make demo-video`; it is labeled deterministic and is not a substitute
+   for the final live-cloud recording.
+
 ## Evidence manifest
 
 Every headline claim, with where a judge can see it proven:

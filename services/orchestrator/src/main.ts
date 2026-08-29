@@ -229,6 +229,9 @@ const server = createServer(async (req, res) => {
           send('done', {
             status: result.run.status,
             statusReason: result.run.statusReason,
+            // The workflow ID ties this on-screen result to the Cloud Run
+            // structured log and the Firestore ledger/workflow_runs doc.
+            workflowId: result.run.id,
             slackBeforeMin: result.run.slackBeforeMin,
             slackAfterMutationMin: result.run.slackAfterMutationMin,
             slackFinalMin: result.run.slackFinalMin,
