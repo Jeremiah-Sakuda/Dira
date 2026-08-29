@@ -226,6 +226,17 @@ const server = createServer(async (req, res) => {
             send('entry', note(`World reseeded: ${seeded.seededEvents} calendar events restored, scenario applied.`));
             return production.handleProductionEvent(trigger, (entry) => send('entry', entry));
           });
+          // Structured completion log so the streamed run — the path the
+          // dashboard actually uses — is tie-able by workflow ID to the UI
+          // result and the Firestore ledger.
+          console.log(JSON.stringify({
+            severity: 'INFO',
+            msg: 'workflow finished',
+            run: result.run.id,
+            status: result.run.status,
+            gemini: result.gemini,
+            path: '/demo/stream',
+          }));
           send('done', {
             status: result.run.status,
             statusReason: result.run.statusReason,
