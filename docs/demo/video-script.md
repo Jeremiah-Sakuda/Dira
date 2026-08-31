@@ -149,14 +149,20 @@ in the next beat.
 
 **Do, in order:**
 
-1. Tab 7 (Calendar "after"): refresh it, still on Aug 16–22. The moved
-   midterm, rebooked interview mirror, and rebuilt study blocks are visible.
-   ~6 seconds. (Tab 6 remains the untouched "before" for contrast if you
-   want one flip between them.)
-2. Tab 4 (Logs Explorer): click into the query editor, type
-   `jsonPayload.run="` then paste the workflow ID you copied from the
-   outcome card in the previous beat (the `wf-evt-…` string) and close the
-   quote, press **Run query**. Click the expand arrow on the entry whose summary says
+1. Tab 7 (Calendar "after"): refresh it, still on Aug 16–22. What visibly
+   changed: the TechCorp interview now sits on **Thursday** (it started
+   Wednesday evening), the workout and side-project blocks moved, and the
+   study plan is rebuilt with new solver-placed blocks. The midterm event
+   itself stays put on the calendar: the exam time is the professor's
+   external fact, Dira repairs everything around it. ~6 seconds. (Tab 6
+   remains the untouched "before" for one flip of contrast.)
+2. Tab 4 (Logs Explorer): use the **query editor pane** (the multi-line
+   `Show query` box), not the top search bar — the search bar wraps your
+   text in a SEARCH() clause that won't match. Delete everything in the
+   editor, then type `jsonPayload.run="` + the workflow ID you copied from
+   the outcome card (the `wf-evt-…` string) + `"`. Set the **time range**
+   picker (top right) to **Last 1 hour** — a stale custom range returns
+   "No data found" even when the entry exists. Press **Run query**. Click the expand arrow on the entry whose summary says
    **workflow finished**; the expanded `jsonPayload` shows the Gemini model
    and latency. ~12 seconds. This is the Logs Explorer tab, not the Cloud
    Run service's Logs panel.
