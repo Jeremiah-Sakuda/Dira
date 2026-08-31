@@ -78,12 +78,13 @@ verified the resulting state.
   Firestore, and a real service-account-managed **Google Calendar**. The
   Next.js judge console is hosted on Vercel and labels each run `LIVE CLOUD`,
   `DETERMINISTIC EVIDENCE`, or `CLOUD UNAVAILABLE`.
-- An optional, separately deployed **Gemma 3n** Cloud Run service
-  transcribes short user voice notes. It returns only text and has no tool
-  credentials; its transcript is untrusted and owner-scoped before entering
-  the same Dira safety pipeline. Mention it as live only after its deployment
-  and end-to-end evidence are included in the demo; call it GPU-backed only if
-  a GPU revision is actually deployed.
+- A separately deployed **Gemma 3n** Cloud Run service (CPU,
+  `google/gemma-3n-E2B-it`) transcribes short user voice notes. It returns
+  only text and has no tool credentials; its transcript is untrusted and
+  owner-scoped before entering the same Dira safety pipeline. One real spoken
+  note has been run end to end against the deployed stack — transcription,
+  Gemini interpretation, repair, verification, RESOLVED — captured in
+  `docs/evidence/gemma-voice-run.json`.
 
 ## What makes it autonomous instead of a chatbot
 
@@ -149,9 +150,9 @@ agent's authority and correctness should remain falsifiable.
 
 We will add Gmail OAuth/Workspace delivery, LMS and production recruiting
 connectors, multi-user negotiation, and a longer-horizon commitment model.
-Gemma 3n voice intake is implemented as an optional private capture path; the
-next step is to collect end-to-end deployment evidence and add a photo-based
-official-notice workflow with the same gates.
+Gemma 3n voice intake is deployed and evidenced end to end
+(`docs/evidence/gemma-voice-run.json`); the next step is a photo-based
+official-notice workflow through the same gates.
 
 ## Built with
 
