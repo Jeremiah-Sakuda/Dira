@@ -1,82 +1,74 @@
 # Demo video — the single authoritative script
 
-This is the **only** recording script. The earlier draft here and Part 2 of
-`docs/submission/submission-review-packet.md` are merged into this cut; the
-packet points back to this file. If a shot conflicts with the live UI, the
-live UI wins. Re-time, do not improvise claims.
+This is the **only** recording script. If a shot conflicts with the live UI,
+the live UI wins. Re-time, do not improvise claims.
 
-## Included evidence-video asset
+**Target duration: 3:35–3:50** (hard limit 4:00). Do not show Gemma in this
+recording unless a real voice-note capture exists and is labeled.
 
-`make demo-video` renders `docs/demo/dira-demo-evidence.mp4`: a 72-second
-captioned walkthrough built from the checked-in architecture and the
-credential-free replay's measured outcomes. It labels itself **deterministic
-replay evidence**. Useful as a gallery preview or social cut. It must **not**
-be submitted as the proof of live Google Cloud actions; the recording below
-is the Devpost video.
-
-**Target duration: 3:35–3:50** (hard limit 4:00). Keep `LIVE CLOUD` visible
-throughout the uncut workflow. Do not show Gemma in this recording unless a
-real voice-note capture exists and is labeled.
+`make demo-video` renders a separate 72-second deterministic evidence clip
+(`docs/demo/dira-demo-evidence.mp4`). It is a gallery/social asset only and
+must not be submitted as the live-cloud proof; the recording below is the
+Devpost video.
 
 ## Non-negotiable evidence rules
 
 - The main workflow is **one uncut live capture**: no speed-ups, no cropping
   the runtime badge, no splicing outcomes from another run.
-- **Hard re-record gate:** if the uncut segment (trigger to RESOLVED) exceeds
-  ~110 seconds, stop and re-record. A slow Gemini round trip plus the tab
-  tour will break the 4:00 ceiling; do not try to save a slow take.
+- **Hard re-record gate:** if the uncut segment (click to RESOLVED) exceeds
+  ~110 seconds, stop and re-record the whole take.
 - Abort if the badge reads `DETERMINISTIC EVIDENCE` or `CLOUD UNAVAILABLE`.
-- Tie the same **workflow ID** across the Dira outcome card, a Cloud Logging
-  query, and the Firestore ledger. This is the strongest proof the UI drives
-  the deployed backend.
-- Evidence language: **real** Google Calendar API mutations; **controlled
+- Evidence language: **real** Google Calendar mutations; **controlled
   Firestore integrations** for recruiter availability, organization
   ownership, and the notification outbox. Never "Gmail was sent"; never imply
-  Gmail Watch / Pub/Sub is exercised if it is not.
-- The default 409 is a **seeded stale recruiter listing**. Say so. Its value
-  is that Dira discovers it by acting, refreshes state, replans, verifies.
+  Gmail Watch / Pub/Sub is exercised.
+- The default 409 is a **seeded stale recruiter listing**. Say so.
+- Never show: the demo token, the calendar ID string, your personal email
+  (it appears in Cloud Run **audit** log rows), or the Cloud Run service's
+  own Logs panel (it contains unrelated red Gemma-debugging entries).
 
-## Tabs to prepare
+## Browser setup — 7 tabs, in this order
 
-1. [Dira home](https://dira-phi.vercel.app)
-2. [Dira Interventions](https://dira-phi.vercel.app/interventions)
-3. [Cloud Run — dira-orchestrator](https://console.cloud.google.com/run/detail/us-central1/dira-orchestrator?project=dira-agentic-2026)
-4. [Cloud Logging](https://console.cloud.google.com/logs/query?project=dira-agentic-2026)
-5. [Firestore data](https://console.cloud.google.com/firestore/databases/-default-/data?project=dira-agentic-2026)
-6. Google Calendar with **Dira Demo — Sam Adeyemi** added and visible,
-   **parked on the seeded demo week (Aug 16–22, 2026)** in both the before
-   and after tabs. The current week is empty by design.
-7. [Architecture diagram](https://github.com/Jeremiah-Sakuda/Dira/blob/main/docs/architecture/dira-production.svg)
+| # | Tab | Parked on |
+| --- | --- | --- |
+| 1 | https://dira-phi.vercel.app | Home, scrolled to top |
+| 2 | https://dira-phi.vercel.app/interventions | **48-Hour Shock** selected, badge `LIVE CLOUD` |
+| 3 | Cloud Run service `dira-orchestrator` | **Metrics** view, scrolled to the very top so only the header strip (green check, name, region, URL) is visible. Never open its Logs panel. |
+| 4 | Cloud Logging **Logs Explorer** (`console.cloud.google.com/logs/query?project=dira-agentic-2026`) | Empty query editor, ready for paste |
+| 5 | Firestore → Data (`console.cloud.google.com/firestore/databases/-default-/data?project=dira-agentic-2026`) | `action_ledger` collection selected in the left column |
+| 6 | Google Calendar "before" | Week of **Aug 16–22, 2026** (current week is empty by design) |
+| 7 | Google Calendar "after" | Same week; you will refresh this one after the run |
+
+Plus one terminal window with this line pre-typed (do not run it yet):
+
+```
+curl https://dira-orchestrator-oq463fciiq-uc.a.run.app/health
+```
 
 ## Pre-record checklist
 
-- [ ] `deploy.sh` current; Cloud Run service page open; structured logs visible.
-- [ ] Terminal proof ready: `curl https://dira-orchestrator-oq463fciiq-uc.a.run.app/health`
-      returning `{"ok":true,"mode":"production"}` (the raw `.run.app` beat).
-- [ ] Interventions page shows `LIVE CLOUD`; default scenario rehearsed once,
-      then left finished so Calendar shows a clean repaired state to reset from.
-- [ ] Know the failure mechanics: every run reseeds; the default scenario
-      seeds slot 1 as listed but actually taken. Do NOT claim a manual flip.
-- [ ] Calendar **before** state captured in one tab, **after** in another,
-      both on the Aug 16–22 week. No live searching mid-take.
-- [ ] Cloud Logging query template ready: `jsonPayload.run="<paste-id>"`.
+- [ ] World reset to pre-test state (ask for a `/demo/reset` or use the reset
+      control); Calendar "before" tab shows the clean seeded week.
+- [ ] Tab 2 badge reads `LIVE CLOUD`. Abort otherwise.
+- [ ] One full rehearsal run done earlier so you know the pacing, then the
+      world reset again. Every run reseeds the world on trigger, so a
+      rehearsal does not poison the take, but the calendar before-tab must be
+      captured fresh after a reset.
 - [ ] Lower-third slide ready:
       `REAL: Vertex AI · Cloud Run · Firestore · Google Calendar` /
       `CONTROLLED: recruiter · organization task · notification outbox`.
-- [ ] A separately captured **No slots available** run labeled
-      `COUNTERFACTUAL RUN`.
-- [ ] Zoom ~110%, notifications off, 1080p capture, mic checked; no token,
-      calendar ID, or personal account data on screen.
+- [ ] The **No slots available** counterfactual captured separately and
+      labeled `COUNTERFACTUAL RUN`.
+- [ ] Zoom ~110%, notifications off, 1080p, mic checked.
 
 ## Recording script
 
-The first line tells a cold viewer what Dira is. Value first, infrastructure
-second, then the uncut run.
+Each beat lists where you are, what you do, and what you say.
 
-### 0:00–0:14 — what Dira is, and why
+### 0:00–0:14 — what Dira is
 
-**Screen:** Dira home. The moved midterm and impacted commitments visible,
-`LIVE CLOUD` in frame.
+**Where:** Tab 1 (home). **Do:** nothing, let it sit; the moved-midterm
+story and impacted commitments are on screen.
 
 > "On Tuesday morning a professor moves the midterm from Friday to Wednesday.
 > That one email quietly breaks the rest of a student's week: study time now
@@ -85,9 +77,9 @@ second, then the uncut run.
 
 ### 0:14–0:28 — this is live, not a mockup
 
-**Screen:** Cloud Run console for `dira-orchestrator`, then one quick beat on
-the terminal: `curl …run.app/health` returning
-`{"ok":true,"mode":"production"}`. Return to Dira.
+**Where:** Tab 3 (Cloud Run, header strip only) for ~4 seconds, then the
+terminal. **Do:** in the terminal, press Enter on the pre-typed curl; the
+response `{"ok":true,"mode":"production"}` appears. Do not scroll Tab 3.
 
 > "Everything you are about to watch runs live on Google Cloud. Here is the
 > Cloud Run service, and here is its public endpoint answering in production
@@ -96,8 +88,10 @@ the terminal: `curl …run.app/health` returning
 
 ### 0:28–0:45 — before state and trigger
 
-**Screen:** Google Calendar before tab (Aug 16–22), then Interventions with
-`LIVE CLOUD` and **48-Hour Shock** selected.
+**Where:** Tab 6 (Calendar "before", Aug 16–22) for ~6 seconds, then Tab 2
+(Interventions). **Do:** confirm **48-Hour Shock** is selected and the badge
+reads `LIVE CLOUD`, then click **Trigger change and repair plan** and move
+the cursor away from the button.
 
 > "Here is the week before the change. Study blocks, an interview, and club
 > work all fit. I trigger the professor's email and take my hands off the
@@ -105,12 +99,14 @@ the terminal: `curl …run.app/health` returning
 > work out a repair from the commitments, deadlines, availability, and
 > permissions it finds."
 
-**Click:** **Trigger change and repair plan**. Hands visibly off.
+### 0:45–2:20 — uncut live workflow *(stay on Tab 2 the entire time)*
 
-### 0:45–2:20 — uncut live workflow *(re-record if this segment > ~110s)*
-
-**Screen:** The live flight recorder, badge in frame, no cuts, including the
-wait for Gemini and the 409.
+**Where:** Tab 2 only. The flight recorder streams line by line on this same
+page, below the button; the badge stays in frame. **Do:** do not switch
+tabs, do not scroll except to follow new lines, do not touch anything until
+the outcome card appears. Speak over the stream as the matching lines land
+(INTERPRET → FEASIBILITY → POLICY → ACTION/ERROR 409 → OBSERVE → REPLAN →
+VERIFY → RESOLVED).
 
 > "First, Gemini extracts the schedule change through a strict schema. It
 > reads language. It cannot authorize actions.
@@ -134,11 +130,14 @@ wait for Gemini and the 409.
 > Resolved. Slack is positive again at one point three hours, with zero
 > human actions after the trigger."
 
-### 2:20–2:35 — the repair receipt
+### 2:20–2:35 — the repair receipt *(still Tab 2)*
 
-**Screen:** Stay on the resolved outcome. Point across **Protected**,
-**Changed**, **Recovered**, **Verified**; open **Why not the other repair
-options?** for one beat. Note the **workflow ID** line on the card.
+**Where:** Tab 2, the outcome card that appeared under the stream. **Do:**
+move the cursor across the **Protected / Changed / Recovered / Verified**
+tiles, click open **Why not the other repair options?** for one beat, then
+point at the small monospace line at the bottom of the card that starts with
+`workflow wf-evt-…`. Triple-click it to highlight, and copy it — you need it
+in the next beat.
 
 > "This card is the repair receipt: what Dira protected, what it changed, the
 > failure it recovered from, and what it re-read to verify. Open this section
@@ -147,11 +146,23 @@ options?** for one beat. Note the **workflow ID** line on the card.
 
 ### 2:35–3:08 — outcomes proven, tied by the workflow ID
 
-**Screen:** Fast tour: (1) Calendar before then after (same seeded week);
-(2) **Cloud Logging** filtered to `jsonPayload.run="<the ID from the card>"`
-showing the `workflow finished` entry with the Gemini model and latency;
-(3) Firestore: recruiter booking confirmed, org task reassigned, the
-action-ledger record for the same ID ending `VERIFIED`, the outbox record.
+**Do, in order:**
+
+1. Tab 7 (Calendar "after"): refresh it, still on Aug 16–22. The moved
+   midterm, rebooked interview mirror, and rebuilt study blocks are visible.
+   ~6 seconds. (Tab 6 remains the untouched "before" for contrast if you
+   want one flip between them.)
+2. Tab 4 (Logs Explorer): click into the query editor, type
+   `jsonPayload.run="` then paste the copied ID and close the quote, press
+   **Run query**. Click the expand arrow on the entry whose summary says
+   **workflow finished**; the expanded `jsonPayload` shows the Gemini model
+   and latency. ~12 seconds. This is the Logs Explorer tab, not the Cloud
+   Run service's Logs panel.
+3. Tab 5 (Firestore): in `action_ledger`, the document IDs begin with the
+   same workflow ID — click one, point at its `workflowId` and
+   `status: VERIFIED` fields. Then click the `recruiter_confirmed`
+   collection (the booking) and `org_tasks` (the reassigned owner), and
+   `outbound_messages` (the notification record). ~12 seconds.
 
 > "The real calendar changed and was independently re-read. In Cloud Logging,
 > filtering by that same workflow ID finds this exact run on the server, with
@@ -161,17 +172,18 @@ action-ledger record for the same ID ending `VERIFIED`, the outbox record.
 > notification systems are controlled Firestore stand-ins and are labeled
 > that way. The calendar is real."
 
-**On-screen lower third:**
+**On-screen lower third during this beat:**
 
 ```text
 REAL: Vertex AI · Cloud Run · Firestore · Google Calendar
 CONTROLLED: recruiter availability · organization task · notification outbox
 ```
 
-### 3:08–3:20 — safe counterfactual
+### 3:08–3:20 — safe counterfactual *(pre-captured clip)*
 
-**Screen:** The separately captured **No slots available** run, labeled
-`COUNTERFACTUAL RUN`.
+**Where:** cut to the separately captured clip: Tab 2 with the
+**No slots available** scenario selected, triggered the same way, ending in
+the safe-stop outcome. Label it `COUNTERFACTUAL RUN` in the edit.
 
 > "One more run, this time with every approved interview slot removed. Dira
 > stops and says why, instead of inventing an appointment. A different world
@@ -181,8 +193,8 @@ CONTROLLED: recruiter availability · organization task · notification outbox
 
 ### 3:20–3:45 — architecture and close
 
-**Screen:** Architecture diagram, then the resolved outcome. Deterministic
-replay / CI evidence only if it fits without rushing.
+**Where:** the architecture diagram (GitHub tab or a local image), then cut
+back to Tab 2's resolved outcome card for the final line.
 
 > "The design rule is simple: Gemini interprets, deterministic code decides.
 > Feasibility, permissions, and planning are computed, property-tested, and
@@ -194,14 +206,16 @@ replay / CI evidence only if it fits without rushing.
 
 ## Final recording checklist
 
-- [ ] `LIVE CLOUD` visible from trigger through `RESOLVED`; run uncut.
-- [ ] Uncut segment ≤ ~110 seconds (else re-recorded).
+- [ ] `LIVE CLOUD` visible from click through `RESOLVED`; segment uncut and
+      ≤ ~110 seconds.
 - [ ] The 409, observe, replan, verify, and positive slack are readable.
-- [ ] Raw `.run.app` `/health` response shown.
-- [ ] Workflow ID visibly identical on the Dira card, the Cloud Logging
-      entry, and the Firestore ledger record.
+- [ ] Raw `.run.app` `/health` response shown in the terminal.
+- [ ] Workflow ID visibly identical on the outcome card, the Logs Explorer
+      entry, and the Firestore ledger document.
 - [ ] Calendar before/after shown on the seeded Aug 16–22 week; the
       controlled-integration disclosure spoken **and** displayed.
+- [ ] No token, calendar ID, personal email, or Cloud Run Logs panel on
+      screen at any point.
 - [ ] English, under 4:00 (captured ≤ 3:55), uploaded **public/unlisted** to
       YouTube or Vimeo; link tested signed-out; URL pasted into the Devpost
       text before submitting.
