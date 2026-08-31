@@ -1,4 +1,4 @@
-# Final Devpost submission — Dira
+# Final Devpost submission: Dira
 
 Complete the bracketed URLs before publishing. Do not replace an evidence
 boundary with a stronger claim than the final video proves.
