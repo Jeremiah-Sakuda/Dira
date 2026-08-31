@@ -18,9 +18,11 @@ import type { PlannedAction } from '@dira/event-schema';
  * duplicate an intent.
  *
  * Reads are served from an in-memory mirror refreshed on open and after
- * every write. The demo deployment runs a single Cloud Run instance
- * (max-instances=1); the transactional writes are what make a multi-worker
- * deployment safe when that cap is lifted.
+ * every write, so read coherence relies on the demo deployment's single
+ * Cloud Run instance (max-instances=1). The transactional writes (create-if-
+ * absent, compare-and-set claim) are the foundation a multi-worker deployment
+ * would build on, but lifting the instance cap also requires replacing the
+ * mirror with live queries — not claimed or tested here.
  */
 export class FirestoreActionLedger implements LedgerApi {
   private mirror = new Map<string, ActionRecord>();

@@ -32,7 +32,7 @@ outside world moves, Dira repairs the graph.
 The canonical workflow. A professor emails: *Midterm 2 moves from Friday 2 PM
 to Wednesday 2 PM.* No one prompts Dira. It then, autonomously:
 
-1. **detects** the email and extracts a structured mutation (Gemini, strict schemas)
+1. **receives** the email event (demo: an authorized webhook carrying the professor email; Gmail Watch → Pub/Sub is a scripted seam, not exercised) and extracts a structured mutation (Gemini, strict schemas)
 2. **propagates** consequences over typed edges — 6 commitments affected
 3. **computes** feasibility: Global Slack +4.1h → **−3.6h**, three violations
 4. **plans** 6 candidate repairs; deterministic validation + explicit cost function
@@ -207,6 +207,17 @@ mutate your interview no matter how well-formed the extraction; policy and
 provenance gates run after all of that. Prompt-injection fixtures are part of
 the eval corpus. More: [`docs/security/README.md`](docs/security/README.md).
 
+## Deploy your own
+
+```bash
+export DIRA_PROJECT=<your-gcp-project> DIRA_SHARE_CALENDAR_WITH=<your-google-account>
+bash infrastructure/cloud-run/provision.sh     # APIs, Firestore, AR repo, SA, secret
+DIRA_ALLOWED_ORIGIN=<your-dashboard-origin> bash infrastructure/cloud-run/deploy.sh
+# dashboard: set DIRA_CLOUD_RUN_URL + DIRA_DEMO_TOKEN as server-side Vercel env
+# vars (vercel env add ...), then: vercel deploy --prod
+# seed + smoke-test: POST /demo/reset then /demo/trigger with the demo token
+```
+
 ## Local replay & modes
 
 `REPLAY_MODE=deterministic` (default) — stored interpretation fixtures, local
@@ -219,7 +230,7 @@ and [`infrastructure/cloud-run/`](infrastructure/cloud-run/).
 
 ## Testing & reliability evidence
 
-- 75 passing tests across unit, integration, **property-based invariants over randomized
+- 77 passing tests across unit, integration, **property-based invariants over randomized
   graphs** (PRD §41 — monotonicity of slack, provenance completeness, policy
   soundness, ranking soundness), and chaos.
 - `golden-replay-20x` CI job: 20 consecutive deterministic replays with the

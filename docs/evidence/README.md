@@ -30,5 +30,5 @@ how many rebuilt blocks the placement produces. Both clear the PRD's ≥4 bar
 across ≥2 systems, and every counted mutation passed an independent
 verification read.
 
-The deterministic evidence (CI `golden-replay-20x`, 75 local tests, 8-way
+The deterministic evidence (CI `golden-replay-20x`, 77 local tests, 8-way
 variation matrix) lives in the repository and requires no credentials.

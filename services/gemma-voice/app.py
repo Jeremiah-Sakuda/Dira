@@ -8,6 +8,7 @@ gates before any action can be executed.
 """
 
 import base64
+import logging
 import os
 import subprocess
 import tempfile
@@ -16,6 +17,9 @@ from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger("gemma-voice")
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title="Dira Gemma 3n voice intake")
 
@@ -32,18 +36,33 @@ class TranscriptionRequest(BaseModel):
 
 
 def pipeline():
-    """Load weights once per GPU instance; never at module import time."""
+    """Load weights once per instance; never at module import time.
+
+    Task naming for Gemma 3n multimodal differs across transformers
+    releases; try the known spellings in order and log which constructed,
+    so a mismatch surfaces as a traceback instead of a silent 503.
+    """
     global _pipeline
     if _pipeline is None:
         from transformers import pipeline as create_pipeline
 
-        _pipeline = create_pipeline(
-            task="any-to-any",
-            model=MODEL_ID,
-            device_map="auto",
-            dtype="auto",
-            token=HF_TOKEN or None,
-        )
+        last_error: Exception | None = None
+        for task in ("any-to-any", "image-text-to-text"):
+            try:
+                _pipeline = create_pipeline(
+                    task=task,
+                    model=MODEL_ID,
+                    device_map="auto",
+                    dtype="auto",
+                    token=HF_TOKEN or None,
+                )
+                logger.info("gemma pipeline constructed with task=%s", task)
+                break
+            except Exception as error:  # noqa: BLE001 — logged, tried in order
+                last_error = error
+                logger.exception("pipeline construction failed for task=%s", task)
+        if _pipeline is None and last_error is not None:
+            raise last_error
     return _pipeline
 
 
@@ -114,6 +133,7 @@ def transcribe(
                 generate_kwargs={"max_new_tokens": 256, "do_sample": False},
             )
         except Exception as error:  # Model/runtime failures must not masquerade as text.
+            logger.exception("Gemma 3n inference failed")
             raise HTTPException(status_code=503, detail="Gemma 3n transcription unavailable") from error
 
     transcript = result[0].get("generated_text", "") if result else ""

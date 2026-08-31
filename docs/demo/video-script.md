@@ -1,262 +1,213 @@
-# Demo video — script and shot list
+# Demo video — the single authoritative script
+
+This is the **only** recording script. The earlier draft here and Part 2 of
+`docs/submission/submission-review-packet.md` are merged into this cut; the
+packet now points back to this file. If a shot conflicts with the live UI,
+the live UI wins — re-time, do not improvise claims.
 
 ## Included evidence-video asset
 
 `make demo-video` renders `docs/demo/dira-demo-evidence.mp4`: a 72-second,
-captioned walkthrough constructed from the checked-in architecture and the
-credential-free replay's measured outcomes. It explicitly labels itself
-**deterministic replay evidence**. It is useful as a project-gallery preview,
-social cut, or a safe fallback when a cloud service is unavailable.
+captioned walkthrough built from the checked-in architecture and the
+credential-free replay's measured outcomes. It labels itself **deterministic
+replay evidence**. Useful as a gallery preview or social cut. It must **not**
+be submitted as the proof of live Google Cloud actions — the recording below
+is the Devpost video.
 
-It must **not** be submitted as the final proof of live Google Cloud actions.
-The four-minute recording below remains the Devpost submission video because
-the rules require a working demo and visible Google Cloud deployment evidence.
-
-**Target runtime: 3:40–3:50.** The hackathon limit is four minutes; preserve
-at least 10 seconds of export/upload safety. The video must make three things
-unmistakable to a first-time judge: Dira autonomously removes real friction,
-the demonstrated run is live on Google Cloud, and its actions are safe,
-verified, and reproducible.
+**Target duration: 3:35–3:50** (hard limit 4:00). Keep `LIVE CLOUD` visible
+throughout the uncut workflow. Do not show Gemma in this recording unless a
+real voice-note capture exists and is labeled.
 
 ## Non-negotiable evidence rules
 
-- Record the main workflow as **one uncut live capture**. Do not speed it up,
-  crop out its runtime badge, or splice in an outcome from another run.
-- Keep `LIVE CLOUD` visible from the moment the run is triggered until its
-  final result. Abort the recording if it says `DETERMINISTIC EVIDENCE` or
-  `CLOUD UNAVAILABLE`.
-- Tie the same workflow ID across the Dira result, a Cloud Run structured log,
-  and the Firestore ledger record. This is the strongest proof that the UI is
-  driving the deployed backend rather than replaying a fixture.
-- Use exact evidence language: **real** Google Calendar API mutations;
-  **controlled Firestore integrations** for recruiter availability,
-  organization ownership, and notification outbox. Never call the outbox
-  Gmail, and do not imply Gmail Watch/Pub/Sub is exercised if it is not.
-- The default 409 is deliberately seeded as a stale recruiter listing. Say so.
-  Its value is that Dira discovers the failure through an attempted action,
-  refreshes external state, replans, and verifies the repair.
+- The main workflow is **one uncut live capture** — no speed-ups, no cropping
+  the runtime badge, no splicing outcomes from another run.
+- **Hard re-record gate:** if the uncut segment (trigger → RESOLVED) exceeds
+  ~110 seconds, stop and re-record. A slow Gemini round-trip plus the tab
+  tour will break the 4:00 ceiling; do not try to save a slow take.
+- Abort if the badge reads `DETERMINISTIC EVIDENCE` or `CLOUD UNAVAILABLE`.
+- Tie the same **workflow ID** across the Dira outcome card, a Cloud Logging
+  query, and the Firestore ledger — strongest proof the UI drives the
+  deployed backend.
+- Evidence language: **real** Google Calendar API mutations; **controlled
+  Firestore integrations** for recruiter availability, organization
+  ownership, and the notification outbox. Never "Gmail was sent"; never imply
+  Gmail Watch / Pub/Sub is exercised if it is not.
+- The default 409 is a **seeded stale recruiter listing** — say so. Its value
+  is that Dira discovers it by acting, refreshes state, replans, verifies.
+
+## Tabs to prepare
+
+1. [Dira home](https://dira-phi.vercel.app)
+2. [Dira Interventions](https://dira-phi.vercel.app/interventions)
+3. [Cloud Run — dira-orchestrator](https://console.cloud.google.com/run/detail/us-central1/dira-orchestrator?project=dira-agentic-2026)
+4. [Cloud Logging](https://console.cloud.google.com/logs/query?project=dira-agentic-2026)
+5. [Firestore data](https://console.cloud.google.com/firestore/databases/-default-/data?project=dira-agentic-2026)
+6. Google Calendar with **Dira Demo — Sam Adeyemi** added and visible.
+7. [Architecture diagram](https://github.com/Jeremiah-Sakuda/Dira/blob/main/docs/architecture/dira-production.svg)
 
 ## Pre-record checklist
 
-- [ ] Dedicated Dira GCP project provisioned and `deploy.sh` completed.
-- [ ] Cloud Run service URL opens; structured logs are visible.
-- [ ] Vertex AI evaluation artifact saved with every case passing.
-- [ ] Google Calendar is open to the service-account-managed Dira calendar.
-- [ ] Firestore recruiter slots are open in the Cloud console.
-- [ ] Know the failure mechanics: every run reseeds the world, and the default
-      scenario seeds the first recruiter slot as *listed-but-actually-taken*.
-      The 409 is a seeded stale-listing race — do NOT claim a manual flip
-      (a console flip would be clobbered by the reseed anyway).
-- [ ] Dashboard Interventions page shows `LIVE CLOUD`.
-- [ ] Default scenario has been rehearsed, then reset for a clean recording.
-- [ ] The selected default run is known to display a workflow ID; Cloud Run
-      logs and Firestore are filtered to that ID before recording begins.
-- [ ] A browser tab is prepared with the calendar **before** state and another
-      with its **after** state, so neither requires a risky live search.
-- [ ] A readable lower-third/slide is ready: `REAL: Vertex AI · Cloud Run ·
-      Firestore · Google Calendar` and `CONTROLLED: recruiter · org task ·
-      notification outbox`.
-- [ ] Browser zoom, notifications, 1080p capture, and microphone are checked.
-- [ ] Final captured duration is under 3:55; no token, calendar ID, or personal
-      account data is visible.
+- [ ] `deploy.sh` current; Cloud Run service page open; structured logs visible.
+- [ ] Terminal proof ready: `curl https://dira-orchestrator-oq463fciiq-uc.a.run.app/health`
+      → `{"ok":true,"mode":"production"}` (the raw `.run.app` URL beat).
+- [ ] Interventions page shows `LIVE CLOUD`; default scenario rehearsed once,
+      then left finished so Calendar shows a clean repaired state to reset from.
+- [ ] Know the failure mechanics: every run reseeds; the default scenario
+      seeds slot 1 as listed-but-actually-taken. Do NOT claim a manual flip.
+- [ ] Calendar **before** state captured in one tab, **after** in another —
+      no risky live searching mid-take.
+- [ ] Cloud Logging query template ready: `jsonPayload.run="<paste-id>"`.
+- [ ] Lower-third slide ready:
+      `REAL: Vertex AI · Cloud Run · Firestore · Google Calendar` /
+      `CONTROLLED: recruiter · organization task · notification outbox`.
+- [ ] A separately captured **No slots available** run labeled
+      `COUNTERFACTUAL RUN`.
+- [ ] Zoom ~110%, notifications off, 1080p capture, mic checked; no token,
+      calendar ID, or personal account data on screen.
 
-## Final recording script
+## Recording script
 
-### 0:00–0:12 — the human shock, with the live boundary visible
+### 0:00–0:16 — problem
 
-**Shot:** Start on the Dira home-page problem story: `Midterm: Fri 2 PM → Wed
-2 PM`, followed by `Interview buffer · study capacity · team QA`. Keep the
-`LIVE CLOUD` badge visible; briefly reveal the Cloud Run service/status in an
-adjacent tab before returning to Dira.
+**Screen:** Dira home. The moved midterm, impacted commitments, `LIVE CLOUD`.
 
-> “A professor moved this midterm forward by 48 hours. That breaks an
-> interview buffer, the study plan, and a team task. Calendars show the
-> conflict; Dira repairs the week. This is a live Cloud Run workflow: Gemini
-> on Vertex interprets the change, Firestore persists the run, and Dira
-> independently verifies Calendar changes through the Google Calendar API.”
+> "A professor moves a midterm from Friday to Wednesday. For a student
+> balancing classes, recruiting, and a team commitment, that one change can
+> break the whole week. The interview buffer disappears, there is not enough
+> study time, and a team deliverable becomes risky. A calendar can show those
+> conflicts. Dira repairs them."
 
-**Judge proof:** The reason the product matters is clear before the technical
-proof appears; `LIVE CLOUD` still makes the active runtime unambiguous.
+### 0:16–0:32 — live Google Cloud proof
 
-### 0:12–0:27 — friction and before-state
+**Screen:** Cloud Run console for `dira-orchestrator`, then one beat on the
+terminal: `curl …run.app/health` → `{"ok":true,"mode":"production"}`. Return
+to Dira.
 
-**Shot:** The original interview and study blocks on the service-account Dira
-Calendar; return to Dira with **48-Hour Shock** selected and the live badge
-still visible.
+> "This is a live Google Cloud deployment — here is the Cloud Run service and
+> its public endpoint answering in production mode. Gemini on Vertex AI
+> interprets the change, Firestore persists the workflow and its action
+> ledger, and Dira makes and independently verifies real Google Calendar
+> changes."
 
-> “The run starts from this real before-state. Dira does not merely flag the
-> overlaps—it must restore a feasible plan within the permissions already
-> stored for each commitment.”
+### 0:32–0:48 — before-state and trigger
 
-### 0:27–0:37 — what the judge controls
+**Screen:** Google Calendar before-state, then Interventions with `LIVE
+CLOUD` and **48-Hour Shock** selected.
 
-**Shot:** Point to **48-Hour Shock**, then briefly reveal **No slots available**
-and **Alternate task owner** in the selector. Click **Run selected scenario**.
+> "Here is the week before the change: study blocks and an interview can
+> coexist. I'm selecting the 48-Hour Shock. This does not retrieve a
+> prewritten answer — it changes the world state. From this point, Dira must
+> derive a repair from the commitments, dependencies, availability, and
+> permissions it finds."
 
-> “This control changes world state, not a prewritten plan. Dira derives the
-> repair from commitments, policies, availability, and dependencies it finds.”
+**Click:** **Trigger change and repair plan**. Hands visibly off.
 
-### 0:37–2:27 — unedited live run
+### 0:48–2:22 — uncut live workflow *(re-record if this segment > ~110s)*
 
-**Shot:** One continuous screen capture. Keep the `LIVE CLOUD` badge and flight
-recorder in frame. Do not cut away during the wait for Gemini or the 409.
+**Screen:** The live flight recorder, badge in frame, no cuts — including the
+wait for Gemini and the 409.
 
-The run narrates its own setup first (“Reseeding the demo world — Firestore
-state + real Google Calendar…”), then the recorder shows INTERPRET (with the
-inline `gemini-3.5-flash on Vertex AI, ~7s` telemetry) → PROPAGATE →
-FEASIBILITY (−3.6h) → PLAN → POLICY → ACTION → ERROR 409 → OBSERVE → REPLAN
-→ ACTION → VERIFY → RESOLVED (+1.3h). Point at the Vertex telemetry when
-INTERPRET lands and at the 409 when it hits.
+> "First, Gemini extracts the professor's schedule change through a strict
+> schema. It interprets language, but it does not authorize actions.
+>
+> Dira propagates the consequences through the stored commitment graph.
+> Global Slack falls from positive four-point-one hours to negative
+> three-point-six: this week is no longer feasible.
+>
+> Deterministic policy limits the repairs: only an approved interview slot,
+> only the designated backup, only flexible personal blocks.
+>
+> The first listed interview slot is deliberately stale. Dira attempts the
+> permitted booking and receives a 409 conflict. It does not pretend the
+> action succeeded, and I do not step in. It refreshes the world, invalidates
+> that option, and replans.
+>
+> It books the remaining authorized slot, delegates visual QA to the backup,
+> rebuilds the study plan, and verifies every mutation by reading the targets
+> back. A successful tool call is not enough.
+>
+> Resolved: positive one-point-three hours of slack, zero human actions after
+> the trigger."
 
-Use only this sparse narration over the run:
+### 2:22–2:37 — the proof-carrying repair receipt
 
-> “Gemini extracts the schedule change under a strict schema. Deterministic
-> code propagates the impact, measures negative slack, and evaluates repairs
-> within stored permissions.”
+**Screen:** Stay on the resolved outcome. Point across **Protected**,
+**Changed**, **Recovered**, **Verified**; open **Why not the other repair
+options?** for one beat. Note the **workflow ID** line on the card.
 
-> “The first listed interview slot is deliberately stale. Dira learns that by
-> acting: it receives a 409, refreshes external state, replans, and uses the
-> remaining authorized slot. No human intervenes after the trigger.”
+> "This is Dira's repair receipt: what it protected, what it changed, the
+> failed action it recovered from, and what it re-read to verify. Expand this
+> and you see why the other options were rejected. Agents usually give you an
+> answer. Dira gives you the proof needed to trust a repair. And this
+> workflow ID — remember it."
 
-When `VERIFY` and `RESOLVED` appear:
+### 2:37–3:10 — prove outcomes, tied by the workflow ID
 
-> “Tool success is not enough. Dira re-reads each target before it considers
-> the repair complete.”
+**Screen:** Fast tour: (1) Calendar before → after; (2) **Cloud Logging**
+filtered to `jsonPayload.run="<the ID from the card>"` showing the
+`workflow finished` entry with the Gemini model + latency; (3) Firestore:
+recruiter booking confirmed, org task reassigned, action-ledger record for
+the same ID ending `VERIFIED`, outbox record.
 
-**Judge proof:** semantic model use, non-chat autonomy, policy constraints,
-failure recovery, and a clear final outcome are demonstrated—not narrated as
-architecture claims.
-
-### 2:27–2:42 — the proof-carrying repair receipt
-
-**Shot:** Stay on Dira's resolved outcome. Reveal the **Proof-carrying repair
-receipt** before leaving the product. Point across **Protected**, **Changed**,
-**Recovered**, and **Verified**, then open **Why not the other repair options?**
-for one beat if a rejected candidate is present.
-
-> “This is Dira's repair receipt. In one screen, it shows what it protected,
-> what it changed, the failed action it recovered from, and what it re-read to
-> verify the result. Expand this line and you can see why the other options
-> were rejected. Agents usually give you an answer. Dira gives you the proof
-> needed to trust a repair.”
-
-**Judge proof:** The result is legible as a user outcome before the detailed
-audit tables. The receipt is generated from this run's state diff, candidate
-evaluation, recovery count, and verification results—not written narration.
-
-### 2:42–3:10 — prove the side effects
-
-**Shot:** Fast, deliberate tab tour; retain the workflow ID in a visible tab or
-capture note.
-
-1. Google Calendar, before → after: interview moved and study plan rebuilt.
-2. Firestore recruiter booking: the second slot is confirmed.
-3. Firestore organization task: visual QA is assigned to the designated backup.
-4. Firestore action ledger for the same workflow: lifecycle ends in `VERIFIED`.
-5. Firestore outbox: a notification record exists.
-6. Return to Dira’s outcome: `RESOLVED`, +1.3h, zero human interventions
-   after the judge-triggered run begins.
-
-> “Calendar is the real Google API mutation and is independently re-read for
-> verification. Recruiter availability, organization ownership, and this
-> notification outbox are controlled Firestore integrations—durable test
-> doubles, not third-party production connectors.”
+> "The real Calendar changed and was independently re-read. This Cloud Run
+> log line carries the same workflow ID as the card you just saw — the UI is
+> driving the deployed backend, not replaying a fixture. The recruiter
+> booking, organization task, and notification outbox are controlled
+> Firestore integrations, clearly labeled test doubles; this ledger record
+> for the same workflow ends in VERIFIED."
 
 **On-screen lower third:**
 
 ```text
 REAL: Vertex AI · Cloud Run · Firestore · Google Calendar
-CONTROLLED: recruiter · organization task · notification outbox
+CONTROLLED: recruiter availability · organization task · notification outbox
 ```
 
-### 3:10–3:22 — tie the run to Google Cloud
+### 3:10–3:22 — safe counterfactual
 
-**Shot:** Cloud Run structured completion log filtered to the captured workflow
-ID, followed by Vertex model/latency evidence for that same execution.
+**Screen:** The separately captured **No slots available** run, labeled
+`COUNTERFACTUAL RUN`.
 
-> “This log ties the run you just watched to Cloud Run and Vertex AI—not a
-> local fixture.”
+> "When I remove every approved interview slot, Dira stops safely rather than
+> fabricating an appointment. A different world produces a different plan."
 
-### 3:22–3:33 — counterfactual: safe restraint
+**Caption:** `NO APPROVED SLOT → SAFE STOP, NOT FABRICATED SUCCESS`
 
-**Shot:** Use a prepared pickup from the **No slots available** scenario.
-Show the run's safe non-success outcome, with the scenario selector visible.
-It may be cut from a separate run; label it `COUNTERFACTUAL RUN` and do not
-present it as part of the uncut default sequence.
+### 3:22–3:47 — architecture and close
 
-> “Remove the approved slots and Dira stops safely instead of inventing an
-> appointment. The inputs changed, so the plan changed.”
+**Screen:** Architecture diagram, then the resolved outcome. Deterministic
+replay / CI evidence only if it fits without rushing.
 
-**On-screen caption:** `NO APPROVED SLOT → SAFE STOP, NOT FABRICATED SUCCESS`
+> "Gemini interprets. Deterministic systems calculate feasibility, enforce
+> permissions, and choose repairs. Firestore makes retries durable and
+> idempotent. Narrow adapters execute, and independent verifiers confirm the
+> world changed.
+>
+> Dira does not remind you that your week broke. It repairs what changed —
+> safely, visibly, and with proof. One thing changes. Everything adapts."
 
-### 3:33–3:43 — architecture in one sentence
+## Final recording checklist
 
-Show `docs/architecture/dira-production.svg`.
-
-> “Gemini interprets. Deterministic engines plan and authorize. The Firestore
-> ledger makes retries idempotent. Narrow adapters execute, and verifiers
-> decide what actually succeeded.”
-
-### 3:43–3:53 — reproducibility and close
-
-**Shot:** Outcome card, then terminal/CI artifact with the deterministic
-evidence clearly labeled.
-
-```text
-UNEDITED LIVE RUN       RESOLVED
-USER INTERVENTIONS             0
-FAILURES RECOVERED             1
-GLOBAL SLACK               +1.3h
-```
-
-Then show `make demo-replay` → `Assertions: 18/18 passed` and CI
-`golden-replay-20x: 20/20`.
-
-> “This live run repaired the plan; the credential-free replay verifies the
-> engine separately. Calendars show conflicts. Dira repairs them.”
-
-## Recording decision gate
-
-Do not upload the take unless all of these are true:
-
-- `LIVE CLOUD` is visible throughout the uncut workflow section.
-- The workflow ID matches the Dira result, Cloud Run log, and Firestore ledger.
-- Gemini/Vertex telemetry, Calendar before/after, the 409/replan, verification,
-  and final result are readable without pausing.
-- The controlled-integration disclosure is spoken and displayed.
-- The video is public, in English, under four minutes, and the exact
-  link has been added to the Devpost submission.
-- Gemma 3n is shown only if its separate GPU service has been deployed and a
-  successful voice-note-to-safe-outcome run has been captured. Otherwise keep
-  it out of the video and describe it as an optional implementation path.
-
-## Required pickup shots before export
-
-- Cloud Run status plus structured run-complete log containing the workflow
-  ID and Gemini model/latency. Never show the demo token.
-- Vertex AI project/model evidence.
-- Firestore action-ledger record ending `VERIFIED`.
-- Google Calendar before and after.
-- CI `golden-replay-20x` artifact.
-
-## Optional alternative counterfactual pickup
-
-Run **Earlier exam** and caption the changed behavior: the interview buffer
-holds, so Dira correctly does not rebook it. This is the clearest compact
-proof that the system derives rather than replays a memorized action list.
-
-Use this **Earlier exam** pickup only if the no-slots run is too slow or
-unreliable to record. It proves derived behavior, but the no-slots safe stop is
-the preferred final-video counterfactual because it makes Dira's restraint
-unmistakable.
+- [ ] `LIVE CLOUD` visible from trigger through `RESOLVED`; run uncut.
+- [ ] Uncut segment ≤ ~110 seconds (else re-recorded).
+- [ ] The 409 → observe → replan → verify → positive slack are readable.
+- [ ] Raw `.run.app` `/health` response shown.
+- [ ] Workflow ID visibly identical on the Dira card, the Cloud Logging
+      entry, and the Firestore ledger record.
+- [ ] Calendar before/after shown; controlled-integration disclosure spoken
+      **and** displayed.
+- [ ] English, under 4:00 (captured ≤ 3:55), uploaded **public/unlisted** to
+      YouTube or Vimeo; link tested signed-out; URL pasted into the Devpost
+      text before submitting.
 
 ## Claims to keep precise
 
-- Say “seeded stale-listing race,” not “a spontaneous live outage.”
-- Say “no human intervention after trigger,” not “no human action” without
-  context—the judge intentionally starts the scenario.
-- Say “Gemini interprets,” never “Gemini decides” or “Gemini authorizes.”
-- Say “notification record/outbox,” never “Gmail was sent.”
-- Say “controlled Firestore integration,” never “recruiter API” or “production
-  organization connector.”
-- Do not show the deterministic 72-second preview during a live-cloud claim.
+- "Seeded stale-listing race," not "spontaneous live outage."
+- "No human intervention after the trigger," not "no human action."
+- "Gemini interprets," never "Gemini decides/authorizes."
+- "Notification record/outbox," never "Gmail was sent."
+- "Controlled Firestore integration," never "recruiter API" or a production
+  connector.
+- Gemma is CPU-fallback; it does not appear in this video without a real
+  captured voice-note run, and is never called GPU-backed.
