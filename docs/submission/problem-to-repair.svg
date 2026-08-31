@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">Dira turns one moved midterm into a verified repaired plan</title>
+  <desc id="desc">A midterm moves from Friday to Wednesday, causing study, interview, and team-task conflicts. Dira derives authorized repairs and restores positive schedule slack.</desc>
+  <rect width="1200" height="520" fill="#111110"/>
+  <text x="72" y="78" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700">One moved commitment can break the whole week.</text>
+  <text x="72" y="113" fill="#c3c2b7" font-family="Arial, Helvetica, sans-serif" font-size="20">Calendars show the conflict. Dira repairs the plan—within stored permissions.</text>
+  <rect x="72" y="162" width="300" height="252" rx="15" fill="#1a1a19" stroke="#3987e5" stroke-width="2"/>
+  <text x="98" y="205" fill="#8a897f" font-family="Arial, Helvetica, sans-serif" font-size="15" letter-spacing="2">EXTERNAL CHANGE</text>
+  <text x="98" y="255" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="700">Midterm</text>
+  <text x="98" y="293" fill="#c3c2b7" font-family="Menlo, monospace" font-size="22">FRI 2 PM → WED 2 PM</text>
+  <text x="98" y="354" fill="#c3c2b7" font-family="Arial, Helvetica, sans-serif" font-size="18">A professor changes one date.</text>
+  <path d="M400 288H485" stroke="#8a897f" stroke-width="3"/>
+  <path d="M473 276l16 12-16 12" fill="none" stroke="#8a897f" stroke-width="3"/>
+  <rect x="510" y="162" width="300" height="252" rx="15" fill="#1a1a19" stroke="#d03b3b" stroke-width="2"/>
+  <text x="536" y="205" fill="#8a897f" font-family="Arial, Helvetica, sans-serif" font-size="15" letter-spacing="2">WHAT BREAKS</text>
+  <text x="536" y="255" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700">Interview buffer</text>
+  <text x="536" y="290" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700">Study capacity · team QA</text>
+  <text x="536" y="354" fill="#d03b3b" font-family="Menlo, monospace" font-size="21">GLOBAL SLACK: −3.6h</text>
+  <path d="M838 288H923" stroke="#8a897f" stroke-width="3"/>
+  <path d="M911 276l16 12-16 12" fill="none" stroke="#8a897f" stroke-width="3"/>
+  <rect x="948" y="162" width="180" height="252" rx="15" fill="#1a1a19" stroke="#0ca30c" stroke-width="2"/>
+  <text x="974" y="205" fill="#8a897f" font-family="Arial, Helvetica, sans-serif" font-size="15" letter-spacing="2">DIRA REPAIRS</text>
+  <text x="974" y="255" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700">Replan</text>
+  <text x="974" y="288" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700">Rebook</text>
+  <text x="974" y="321" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700">Delegate</text>
+  <text x="974" y="354" fill="#0ca30c" font-family="Menlo, monospace" font-size="18">+1.3h</text>
+  <text x="72" y="471" fill="#8a897f" font-family="Menlo, monospace" font-size="16">AUTHORIZED ACTIONS · INDEPENDENT VERIFICATION · ZERO HUMAN INTERVENTIONS AFTER TRIGGER</text>
+</svg>

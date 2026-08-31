@@ -22,6 +22,17 @@ VERTEX_LOCATION="${DIRA_VERTEX_LOCATION:-global}"
 SHARE_WITH="${DIRA_SHARE_CALENDAR_WITH:-}"
 ALLOWED_ORIGIN="${DIRA_ALLOWED_ORIGIN:?set DIRA_ALLOWED_ORIGIN to the public dashboard origin}"
 SERVICE_ACCOUNT="dira-orchestrator@${PROJECT}.iam.gserviceaccount.com"
+GEMMA3N_URL="${DIRA_GEMMA3N_URL:-}"
+
+# Gemma voice intake is optional. When configured, the orchestrator receives
+# only the internal service URL and an app-scoped token; it never receives the
+# Hugging Face credential used by the Gemma service itself.
+GEMMA_ENV=""
+GEMMA_SECRET=""
+if [[ -n "$GEMMA3N_URL" ]]; then
+  GEMMA_ENV=",DIRA_GEMMA3N_URL=${GEMMA3N_URL}"
+  GEMMA_SECRET=",DIRA_GEMMA3N_TOKEN=dira-gemma3n-token:latest"
+fi
 
 gcloud builds submit \
   --project "$PROJECT" \
@@ -37,8 +48,8 @@ gcloud run deploy dira-orchestrator \
   --service-account "$SERVICE_ACCOUNT" \
   --max-instances 1 \
   --memory 1Gi \
-  --set-env-vars "REPLAY_MODE=production,GOOGLE_GENAI_USE_VERTEXAI=true,GOOGLE_CLOUD_PROJECT=${PROJECT},GOOGLE_CLOUD_LOCATION=${VERTEX_LOCATION},DIRA_SHARE_CALENDAR_WITH=${SHARE_WITH},DIRA_ALLOWED_ORIGIN=${ALLOWED_ORIGIN}" \
-  --set-secrets "DIRA_DEMO_TOKEN=dira-demo-token:latest"
+  --set-env-vars "REPLAY_MODE=production,GOOGLE_GENAI_USE_VERTEXAI=true,GOOGLE_CLOUD_PROJECT=${PROJECT},GOOGLE_CLOUD_LOCATION=${VERTEX_LOCATION},DIRA_SHARE_CALENDAR_WITH=${SHARE_WITH},DIRA_ALLOWED_ORIGIN=${ALLOWED_ORIGIN}${GEMMA_ENV}" \
+  --set-secrets "DIRA_DEMO_TOKEN=dira-demo-token:latest${GEMMA_SECRET}"
 
 echo
 echo "Service URL:"

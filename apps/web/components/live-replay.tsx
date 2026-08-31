@@ -62,6 +62,9 @@ const fmtSlack = (minutes?: number) =>
     ? '—'
     : `${minutes >= 0 ? '+' : '−'}${(Math.abs(minutes) / 60).toFixed(1)}h`;
 
+const plural = (count: number, singular: string, pluralForm = `${singular}s`) =>
+  `${count} ${count === 1 ? singular : pluralForm}`;
+
 /** A judge-controlled run, with its execution boundary visible at all times. */
 export function LiveReplay() {
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -130,6 +133,7 @@ export function LiveReplay() {
   // The planner's first round, as this run computed it — live evidence that
   // the repair is derived from state, not replayed.
   const liveCandidates = entries.find((e) => e.phase === 'PLAN' && e.data?.candidates?.length)?.data?.candidates ?? [];
+  const rejectedCandidates = liveCandidates.filter((candidate) => !candidate.acceptable);
   const runtimeKind = !runtime
     ? 'neutral'
     : runtime.mode === 'production'
@@ -142,9 +146,9 @@ export function LiveReplay() {
     <section className="panel live-replay" aria-labelledby="live-run-title">
       <div className="live-heading">
         <div>
-          <div className="section-label" id="live-run-title">Judge-controlled run</div>
+          <div className="section-label" id="live-run-title">Judge-controlled repair</div>
           <p className="muted">
-            Change an input, execute the complete workflow, and inspect every decision and side effect.
+            Change the world, then inspect how Dira repairs the commitments that no longer fit.
           </p>
         </div>
         <div className="runtime-evidence" aria-live="polite">
@@ -169,7 +173,7 @@ export function LiveReplay() {
           ))}
         </select>
         <button className="btn" onClick={start} disabled={running}>
-          {running ? 'Engine running…' : summary ? 'Run selected scenario again' : 'Run selected scenario'}
+          {running ? 'Repairing plan…' : summary ? 'Run this repair again' : 'Trigger change and repair plan'}
         </button>
       </div>
       <p className="scenario-description">{selected.description}</p>
@@ -201,6 +205,64 @@ export function LiveReplay() {
                 : `Dira stopped without executing further actions${summary.statusReason ? `: ${summary.statusReason}` : '.'}`}
             </span>
           </div>
+          <section className="repair-receipt" aria-labelledby="repair-receipt-title">
+            <div className="receipt-heading">
+              <div>
+                <div className="section-label">Proof-carrying repair receipt</div>
+                <h3 id="repair-receipt-title">
+                  {summary.status === 'RESOLVED' ? 'A repaired week you can audit.' : 'A safe stop you can audit.'}
+                </h3>
+              </div>
+              <span className={`receipt-seal ${summary.status === 'RESOLVED' ? 'is-resolved' : ''}`}>
+                {summary.status === 'RESOLVED' ? 'VERIFIED' : 'SAFE STOP'}
+              </span>
+            </div>
+            <div className="receipt-grid">
+              <div className="receipt-card">
+                <span className="receipt-kicker">Protected</span>
+                <strong>{(summary.slackFinalMin ?? 0) >= 0 ? `${fmtSlack(summary.slackFinalMin)} feasible capacity` : 'Authorization boundary'}</strong>
+                <p>
+                  {summary.userInterventions === 0
+                    ? 'No additional human action was required after the trigger.'
+                    : `${plural(summary.userInterventions, 'human action')} was required during this run.`}
+                </p>
+              </div>
+              <div className="receipt-card">
+                <span className="receipt-kicker">Changed</span>
+                <strong>{plural(summary.changes?.length ?? 0, 'surface')}</strong>
+                <ul className="receipt-list">
+                  {(summary.changes ?? []).slice(0, 3).map((change) => (
+                    <li key={change.surface}><span>{change.surface}</span><em>{change.after}</em></li>
+                  ))}
+                  {(summary.changes?.length ?? 0) === 0 && <li><span>No external mutation executed</span></li>}
+                </ul>
+              </div>
+              <div className="receipt-card">
+                <span className="receipt-kicker">Recovered</span>
+                <strong>{summary.failuresRecovered > 0 ? plural(summary.failuresRecovered, 'failed action') : 'No failed actions'}</strong>
+                <p>
+                  {summary.failuresRecovered > 0
+                    ? 'Fresh state was observed before Dira replanned.'
+                    : 'The completed action path required no recovery.'}
+                </p>
+              </div>
+              <div className="receipt-card">
+                <span className="receipt-kicker">Verified</span>
+                <strong>{plural(summary.changes?.length ?? 0, 'result')} re-read</strong>
+                <p>Completion is based on postcondition checks, not tool responses.</p>
+              </div>
+            </div>
+            {rejectedCandidates.length > 0 && (
+              <details className="receipt-details">
+                <summary>Why not the other repair options?</summary>
+                <ul>
+                  {rejectedCandidates.map((candidate) => (
+                    <li key={candidate.id}><strong>{candidate.label}</strong> — {candidate.rejectionReason ?? 'Rejected by the planner.'}</li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </section>
           <div className="tile-row compact-tiles">
             <Tile k="Slack before" v={fmtSlack(summary.slackBeforeMin)} />
             <Tile k="After trigger" v={fmtSlack(summary.slackAfterMutationMin)} tone={(summary.slackAfterMutationMin ?? 0) < 0 ? 'critical' : 'good'} />

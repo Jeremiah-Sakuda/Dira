@@ -62,17 +62,21 @@ verified, and reproducible.
 
 ## Final recording script
 
-### 0:00–0:12 — live boundary first
+### 0:00–0:12 — the human shock, with the live boundary visible
 
-**Shot:** Interventions page with `LIVE CLOUD` badge visible. Quickly show the
-Cloud Run service/status in an adjacent tab, then return to Dira.
+**Shot:** Start on the Dira home-page problem story: `Midterm: Fri 2 PM → Wed
+2 PM`, followed by `Interview buffer · study capacity · team QA`. Keep the
+`LIVE CLOUD` badge visible; briefly reveal the Cloud Run service/status in an
+adjacent tab before returning to Dira.
 
-> “This is a live Cloud Run workflow. Gemini on Vertex interprets a change,
-> Firestore persists the run, and Dira independently verifies Calendar changes
-> through the Google Calendar API.”
+> “A professor moved this midterm forward by 48 hours. That breaks an
+> interview buffer, the study plan, and a team task. Calendars show the
+> conflict; Dira repairs the week. This is a live Cloud Run workflow: Gemini
+> on Vertex interprets the change, Firestore persists the run, and Dira
+> independently verifies Calendar changes through the Google Calendar API.”
 
-**Judge proof:** Google Cloud is visible before any product claim; the active
-runtime is not confused with the deterministic fallback.
+**Judge proof:** The reason the product matters is clear before the technical
+proof appears; `LIVE CLOUD` still makes the active runtime unambiguous.
 
 ### 0:12–0:27 — friction and before-state
 
@@ -80,11 +84,9 @@ runtime is not confused with the deterministic fallback.
 Calendar; return to Dira with **48-Hour Shock** selected and the live badge
 still visible.
 
-> “I am balancing classes, recruiting, and a student organization. The hard
-> part is not remembering what I have to do. It is figuring out what
-> everything else breaks when one commitment changes. Moving this midterm
-> forward breaks study capacity, an interview buffer, and a time-bound team
-> task.”
+> “The run starts from this real before-state. Dira does not merely flag the
+> overlaps—it must restore a feasible plan within the permissions already
+> stored for each commitment.”
 
 ### 0:27–0:37 — what the judge controls
 
@@ -125,7 +127,24 @@ When `VERIFY` and `RESOLVED` appear:
 failure recovery, and a clear final outcome are demonstrated—not narrated as
 architecture claims.
 
-### 2:27–2:57 — prove the side effects
+### 2:27–2:42 — the proof-carrying repair receipt
+
+**Shot:** Stay on Dira's resolved outcome. Reveal the **Proof-carrying repair
+receipt** before leaving the product. Point across **Protected**, **Changed**,
+**Recovered**, and **Verified**, then open **Why not the other repair options?**
+for one beat if a rejected candidate is present.
+
+> “This is Dira's repair receipt. In one screen, it shows what it protected,
+> what it changed, the failed action it recovered from, and what it re-read to
+> verify the result. Expand this line and you can see why the other options
+> were rejected. Agents usually give you an answer. Dira gives you the proof
+> needed to trust a repair.”
+
+**Judge proof:** The result is legible as a user outcome before the detailed
+audit tables. The receipt is generated from this run's state diff, candidate
+evaluation, recovery count, and verification results—not written narration.
+
+### 2:42–3:10 — prove the side effects
 
 **Shot:** Fast, deliberate tab tour; retain the workflow ID in a visible tab or
 capture note.
@@ -150,7 +169,7 @@ REAL: Vertex AI · Cloud Run · Firestore · Google Calendar
 CONTROLLED: recruiter · organization task · notification outbox
 ```
 
-### 2:57–3:17 — tie the run to Google Cloud
+### 3:10–3:22 — tie the run to Google Cloud
 
 **Shot:** Cloud Run structured completion log filtered to the captured workflow
 ID, followed by Vertex model/latency evidence for that same execution.
@@ -158,7 +177,19 @@ ID, followed by Vertex model/latency evidence for that same execution.
 > “This log ties the run you just watched to Cloud Run and Vertex AI—not a
 > local fixture.”
 
-### 3:17–3:35 — architecture in one sentence
+### 3:22–3:33 — counterfactual: safe restraint
+
+**Shot:** Use a prepared pickup from the **No slots available** scenario.
+Show the run's safe non-success outcome, with the scenario selector visible.
+It may be cut from a separate run; label it `COUNTERFACTUAL RUN` and do not
+present it as part of the uncut default sequence.
+
+> “Remove the approved slots and Dira stops safely instead of inventing an
+> appointment. The inputs changed, so the plan changed.”
+
+**On-screen caption:** `NO APPROVED SLOT → SAFE STOP, NOT FABRICATED SUCCESS`
+
+### 3:33–3:43 — architecture in one sentence
 
 Show `docs/architecture/dira-production.svg`.
 
@@ -166,7 +197,7 @@ Show `docs/architecture/dira-production.svg`.
 > ledger makes retries idempotent. Narrow adapters execute, and verifiers
 > decide what actually succeeded.”
 
-### 3:35–3:48 — reproducibility and close
+### 3:43–3:53 — reproducibility and close
 
 **Shot:** Outcome card, then terminal/CI artifact with the deterministic
 evidence clearly labeled.
@@ -179,8 +210,7 @@ GLOBAL SLACK               +1.3h
 ```
 
 Then show `make demo-replay` → `Assertions: 18/18 passed` and CI
-`golden-replay-20x: 20/20`. If time permits, flash the **No slots available**
-result: a safe non-success outcome.
+`golden-replay-20x: 20/20`.
 
 > “This live run repaired the plan; the credential-free replay verifies the
 > engine separately. Calendars show conflicts. Dira repairs them.”
@@ -194,8 +224,11 @@ Do not upload the take unless all of these are true:
 - Gemini/Vertex telemetry, Calendar before/after, the 409/replan, verification,
   and final result are readable without pausing.
 - The controlled-integration disclosure is spoken and displayed.
-- The video is public/unlisted, in English, under four minutes, and the exact
+- The video is public, in English, under four minutes, and the exact
   link has been added to the Devpost submission.
+- Gemma 3n is shown only if its separate GPU service has been deployed and a
+  successful voice-note-to-safe-outcome run has been captured. Otherwise keep
+  it out of the video and describe it as an optional implementation path.
 
 ## Required pickup shots before export
 
@@ -206,17 +239,16 @@ Do not upload the take unless all of these are true:
 - Google Calendar before and after.
 - CI `golden-replay-20x` artifact.
 
-## Optional 10-second pickup (replace—not add to—the final run)
+## Optional alternative counterfactual pickup
 
 Run **Earlier exam** and caption the changed behavior: the interview buffer
 holds, so Dira correctly does not rebook it. This is the clearest compact
 proof that the system derives rather than replays a memorized action list.
 
-If the production run is reliably fast enough, this is the preferred pickup:
-briefly select **No slots available** and show the safe non-success result.
-Caption it: `NO APPROVED SLOT → SAFE STOP, NOT FABRICATED SUCCESS`. Never add
-this pickup at the expense of the uncut default run or the Cloud Run/Calendar
-proof; those are the non-negotiable judging evidence.
+Use this **Earlier exam** pickup only if the no-slots run is too slow or
+unreliable to record. It proves derived behavior, but the no-slots safe stop is
+the preferred final-video counterfactual because it makes Dira's restraint
+unmistakable.
 
 ## Claims to keep precise
 

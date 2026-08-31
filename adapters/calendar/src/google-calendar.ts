@@ -155,20 +155,28 @@ export async function ensureDemoCalendar(
   const api = await calendarClient();
   const list = await api.calendarList.list({ maxResults: 100 });
   const existing = list.data.items?.find((c: calendar_v3.Schema$CalendarListEntry) => c.summary === summary);
-  if (existing?.id) return { calendarId: existing.id, created: false };
+  const created = existing?.id
+    ? undefined
+    : await api.calendars.insert({ requestBody: { summary, timeZone: 'America/Chicago' } });
+  const calendarId = existing?.id ?? created?.data.id;
+  if (!calendarId) throw new Error('Google Calendar did not return a calendar id');
 
-  const created = await api.calendars.insert({
-    requestBody: { summary, timeZone: 'America/Chicago' },
-  });
-  const calendarId = created.data.id!;
+  // Sharing is reconciled even when the calendar pre-dates DIRA_SHARE_CALENDAR_WITH.
+  // That makes provisioning safe to repeat after the human demo account changes.
   if (shareWithEmail) {
-    await api.acl.insert({
-      calendarId,
-      requestBody: {
-        role: 'writer',
-        scope: { type: 'user', value: shareWithEmail },
-      },
-    });
+    const acl = await api.acl.list({ calendarId, maxResults: 250 });
+    const grant = acl.data.items?.find(
+      (entry) => entry.scope?.type === 'user'
+        && entry.scope.value?.toLowerCase() === shareWithEmail.toLowerCase(),
+    );
+    if (!grant?.id) {
+      await api.acl.insert({
+        calendarId,
+        requestBody: { role: 'writer', scope: { type: 'user', value: shareWithEmail } },
+      });
+    } else if (grant.role !== 'writer') {
+      await api.acl.update({ calendarId, ruleId: grant.id, requestBody: { role: 'writer' } });
+    }
   }
-  return { calendarId, created: true };
+  return { calendarId, created: Boolean(created) };
 }

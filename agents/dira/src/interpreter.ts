@@ -247,6 +247,19 @@ export async function interpretEmail(
         attempts,
       };
     }
+    // An audio recording has no cryptographic proof that a third party spoke
+    // it. Gemma 3n is therefore limited to a user's own commitments. A voice
+    // note can capture the user's intent privately, but can never impersonate
+    // a professor, recruiter, or teammate to change someone else's event.
+    if (email.source === 'gemma_voice_note' && entity.owner !== sender?.id) {
+      return {
+        ok: false,
+        result,
+        failure: 'UNVERIFIED_SENDER',
+        detail: `voice note owner ${sender?.email ?? email.from} cannot mutate commitment ${entity.id} owned by ${entity.owner}`,
+        attempts,
+      };
+    }
     if (result.mutation.confidence < state.config.minInterpretationConfidence) {
       return {
         ok: false,

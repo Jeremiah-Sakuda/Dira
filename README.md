@@ -241,6 +241,17 @@ Pub/Sub provisioning remains an optional ingestion path, not a claimed live
 dependency. The dashboard deploys through Vercel. See
 [`DEVIATIONS.md`](DEVIATIONS.md) for exact evidence boundaries.
 
+### Optional Gemma 3n private voice intake
+
+Dira also contains a separately deployable **Gemma 3n** audio intake service.
+It transcribes a short, user-recorded voice note in a dedicated Cloud Run
+service and returns only text to Dira; it holds no Calendar or tool
+credentials. The transcript re-enters as an untrusted `gemma_voice_note` event
+and must pass the same strict schema, owner restriction, confidence, provenance,
+policy, ledger, and verification gates as any other trigger. This deployment is
+optional and is **not** claimed as live until its Cloud Run service is enabled
+and demonstrated. [Deployment details](infrastructure/gemma-voice/README.md).
+
 ## Setup
 
 ```bash
@@ -268,6 +279,11 @@ npm --workspace apps/web run dev   # dashboard on :3000
   until events are re-anchored — a known modeling simplification.
 - Recruiter scheduling and the org task tracker are controlled test doubles
   (PRD §46), clearly labeled — not claimed third-party integrations.
+- The optional Gemma 3n voice-note service is deployed separately from the
+  core repair loop. In `dira-agentic-2026` it currently uses an 8-vCPU/32-GiB
+  CPU Cloud Run fallback because L4 quota is unavailable; it is only presented
+  as live after a successful end-to-end recording, and must not be called
+  GPU-backed until a GPU revision is actually deployed.
 - One user, one week horizon, single-timezone fixture. Multi-user and
   long-horizon planning are P2.
 

@@ -48,6 +48,7 @@ export const IDS = {
 } as const;
 
 export const PEOPLE = {
+  user: { id: USER_ID, name: 'Sam Adeyemi', email: 'sam.adeyemi@dira.demo' },
   maya: { id: 'maya-okafor', name: 'Maya Okafor', email: 'maya.okafor@university.demo' },
   tunde: { id: 'tunde-adebayo', name: 'Tunde Adebayo', email: 'tunde.adebayo@university.demo' },
   professor: { id: 'elena-chen', name: 'Prof. Elena Chen', email: 'elena.chen@university.demo' },
@@ -311,6 +312,7 @@ export function buildGoldenFixture(variation: GoldenVariation = {}): GoldenFixtu
       { id: 'edge-interview-goal', type: 'SUPPORTS_GOAL', from: IDS.interview, to: 'goal-swe-offer' },
     ],
     people: {
+      [PEOPLE.user.id]: { ...PEOPLE.user, authorityDomains: [] },
       [PEOPLE.maya.id]: { ...PEOPLE.maya, availability: [{ start: at(1, 9), end: at(1, 18) }] },
       [PEOPLE.tunde.id]: { ...PEOPLE.tunde, availability: [{ start: at(1, 9), end: at(1, 18) }] },
       [PEOPLE.professor.id]: { ...PEOPLE.professor, authorityDomains: ['academic'] },

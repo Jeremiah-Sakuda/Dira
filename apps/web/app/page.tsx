@@ -19,30 +19,28 @@ export default async function SystemPage() {
 
   return (
     <main>
-      <div className="hero">
-        <div className="panel system-state">
-          <div className="section-label">Reference system state</div>
-          <div className="system-word" style={{ color: feasible ? 'var(--status-good)' : 'var(--status-critical)' }}>
-            {feasible ? 'FEASIBLE' : 'AT RISK'}
-          </div>
-          <div>
-            <StatusPill
-              kind={feasible ? 'good' : 'critical'}
-              label={`global slack ${fmtSlack(run.slackFinalMin ?? 0)}`}
-            />
-          </div>
-          <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
-            Dira monitors commitments across school, career, organizations and personal
-            life; when the outside world moves, it repairs the consequences. This overview
-            is a reproducible deterministic snapshot — run the real thing live below.
+      <section className="problem-hero" aria-labelledby="problem-title">
+        <div className="panel problem-copy">
+          <div className="section-label">When plans collide</div>
+          <h1 id="problem-title" className="hero-title">
+            One moved commitment can break the whole week.
+          </h1>
+          <p>
+            A midterm moves from Friday to Wednesday. The interview buffer disappears,
+            study capacity no longer fits, and a team deliverable is suddenly at risk.
+            Calendars show that conflict. Dira repairs it.
           </p>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <p className="muted">
+            It only takes actions already permitted by the people and policies in the plan,
+            then verifies the changed world before calling the repair complete.
+          </p>
+          <div className="hero-actions">
             <Link
               href="/interventions"
               className="btn"
               style={{ textDecoration: 'none', fontSize: 15, padding: '11px 20px' }}
             >
-              ▶ Run Dira live on Google Cloud
+              ▶ Run the 48-Hour Shock
             </Link>
             {productionConfigured && (
               <StatusPill kind="good" label="LIVE CLOUD · Vertex + Calendar" />
@@ -50,10 +48,30 @@ export default async function SystemPage() {
           </div>
         </div>
 
-        <div className="panel">
-          <div className="section-label">Global slack — most constrained critical path</div>
-          <SlackChart points={data.slackTrajectory} />
+        <div className="panel impact-story" aria-label="48-Hour Shock: conflict and verified repair">
+          <div className="section-label">The 48-Hour Shock</div>
+          <div className="story-step story-trigger">
+            <span className="story-kicker">External change</span>
+            <strong>Midterm: Fri 2 PM → Wed 2 PM</strong>
+          </div>
+          <div className="story-arrow" aria-hidden="true">↓</div>
+          <div className="story-step story-risk">
+            <span className="story-kicker">What breaks</span>
+            <strong>Interview buffer · study capacity · team QA</strong>
+            <span className="mono">GLOBAL SLACK +4.1h → −3.6h</span>
+          </div>
+          <div className="story-arrow" aria-hidden="true">↓</div>
+          <div className="story-step story-repair">
+            <span className="story-kicker">Dira&apos;s verified repair</span>
+            <strong>Replan, rebook, delegate, rebuild</strong>
+            <span className="mono">RESOLVED · +1.3h · 0 HUMAN ACTIONS</span>
+          </div>
         </div>
+      </section>
+
+      <div className="panel slack-evidence">
+        <div className="section-label">Evidence — global slack across the repair</div>
+        <SlackChart points={data.slackTrajectory} />
       </div>
 
       <div className="tile-row">
@@ -64,7 +82,7 @@ export default async function SystemPage() {
       </div>
 
       <div className="panel">
-        <div className="section-label">Recent intervention</div>
+        <div className="section-label">What Dira changed in the reference repair</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, flexWrap: 'wrap' }}>
           <strong style={{ fontSize: 16.5 }}>ECON 402 — the 48-Hour Shock</strong>
           <StatusPill kind={feasible ? 'good' : 'warning'} label={run.status} />

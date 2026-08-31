@@ -15,6 +15,7 @@
     "@dira/agent": "*",
     "@dira/event-schema": "*",
     "@dira/fixtures": "*",
+    "@dira/gemma-voice": "*",
     "@dira/observability": "*",
     "@dira/tool-contracts": "*",
     "@google-cloud/firestore": "^9.0.0",

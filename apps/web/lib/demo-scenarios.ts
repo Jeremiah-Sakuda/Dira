@@ -3,7 +3,7 @@ import type { GoldenVariation } from '@dira/fixtures/golden';
 export const DEMO_SCENARIOS = {
   default: {
     label: '48-Hour Shock',
-    description: 'Default: first interview slot conflicts, so Dira replans and verifies the second.',
+    description: 'A midterm moves 48 hours earlier. Dira must protect study time, rebook the interview, and delegate team QA; the first listed slot is deliberately stale, so it must replan and verify a second.',
     variation: {},
   },
   early_exam: {

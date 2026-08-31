@@ -9,11 +9,11 @@ export default async function InterventionsPage() {
 
   return (
     <main>
-      <h1 className="page-title">Interventions</h1>
+      <h1 className="page-title">Repair a broken week</h1>
       <p className="page-sub">
-        Every intervention is a full flight recording: the triggering event, the
-        interpreted mutation, typed-edge propagation, solver verdicts, candidate plans,
-        policy rulings, ledgered actions, failures, and independent verification.
+        Choose a real scheduling shock, then let Dira find the commitments it affects,
+        make only authorized repairs, and verify the result. The flight recorder below
+        makes every decision and side effect inspectable.
       </p>
 
       <div className="stack">

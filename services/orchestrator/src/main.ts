@@ -3,7 +3,8 @@ import { timingSafeEqual } from 'node:crypto';
 import { FileLedgerStore } from '@dira/action-ledger/file-store';
 import { buildReplayRuntime, computeRunMetrics } from '@dira/agent';
 import { FileWorkflowStore } from '@dira/agent/file-stores';
-import { RawEmailEventSchema } from '@dira/event-schema';
+import { Gemma3nVoiceClient, transcriptToVoiceEvent } from '@dira/gemma-voice';
+import { RawEmailEventSchema, RawVoiceNoteSchema } from '@dira/event-schema';
 import { buildGoldenFixture, type GoldenVariation } from '@dira/fixtures/golden';
 
 /**
@@ -16,6 +17,7 @@ import { buildGoldenFixture, type GoldenVariation } from '@dira/fixtures/golden'
  *   GET  /health             liveness (/healthz is intercepted by GFE on run.app)
  *   GET  /status             seeded? calendar id, doc counts (production)
  *   POST /events             normalized RawEmailEvent (Pub/Sub push or webhook)
+ *   POST /voice-notes        Gemma 3n transcription → owner-scoped voice event
  *   POST /demo/reset         reseed the demo world (body: optional variation)
  *   POST /demo/trigger       inject the golden professor email
  *   GET  /runs/latest        latest workflow run + flight recording
@@ -35,6 +37,8 @@ const MODE =
 const DATA_DIR = process.env.DIRA_DATA_DIR ?? '.dira-runtime';
 const DEMO_TOKEN = process.env.DIRA_DEMO_TOKEN ?? '';
 const ALLOWED_ORIGIN = process.env.DIRA_ALLOWED_ORIGIN ?? 'http://localhost:3000';
+const GEMMA3N_URL = process.env.DIRA_GEMMA3N_URL ?? '';
+const GEMMA3N_TOKEN = process.env.DIRA_GEMMA3N_TOKEN ?? '';
 
 if (MODE === 'production' && !DEMO_TOKEN) {
   throw new Error('DIRA_DEMO_TOKEN is required in production mode');
@@ -66,6 +70,13 @@ function requireAuthorization(req: IncomingMessage, res: ServerResponse): boolea
   if (authorized(req)) return true;
   json(req, res, 401, { error: 'unauthorized' });
   return false;
+}
+
+function gemmaVoiceClient(): Gemma3nVoiceClient {
+  if (!GEMMA3N_URL) {
+    throw new Error('Gemma 3n voice intake is not configured');
+  }
+  return new Gemma3nVoiceClient({ endpointUrl: GEMMA3N_URL, token: GEMMA3N_TOKEN || undefined });
 }
 
 const readBody = (req: NodeJS.ReadableStream): Promise<string> =>
@@ -181,6 +192,26 @@ const server = createServer(async (req, res) => {
           }),
         );
         json(req, res, 200, result);
+        return;
+      }
+      if (req.method === 'POST' && url.pathname === '/voice-notes') {
+        if (!requireAuthorization(req, res)) return;
+        const note = RawVoiceNoteSchema.parse(safeJson(await readBody(req)));
+        const transcription = await gemmaVoiceClient().transcribe(note);
+        const trigger = transcriptToVoiceEvent(note, transcription);
+        const result = await serialized(() => production.handleProductionEvent(trigger));
+        console.log(JSON.stringify({
+          severity: 'INFO',
+          msg: 'Gemma 3n voice workflow finished',
+          run: result.run.id,
+          status: result.run.status,
+          gemma3n: { model: transcription.model, latencyMs: transcription.latencyMs },
+          gemini: result.gemini,
+        }));
+        json(req, res, 200, {
+          ...result,
+          gemma3n: { model: transcription.model, latencyMs: transcription.latencyMs },
+        });
         return;
       }
       if (req.method === 'GET' && url.pathname === '/demo/stream') {

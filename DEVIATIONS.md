@@ -121,3 +121,14 @@ multi-user negotiation, LMS ingestion, Gmail OAuth delivery, and production
 third-party recruiter/org connectors are later work. The implemented safety
 and recovery properties are intentionally deeper than that integration
 breadth.
+
+## 14. Optional Gemma 3n voice-note intake
+
+The repository includes an optional, separately deployable GPU-backed Cloud
+Run service for `google/gemma-3n-E2B-it`. It accepts a short user voice note
+and returns a transcript only; it has no Dira tool credentials. The
+orchestrator converts that transcript to a visibly labeled `gemma_voice_note`
+event and restricts it to a commitment owned by the recording user before the
+standard schema, confidence, provenance, policy, ledger, and verification
+layers run. The Gemma service is not in the default deployment and must not be
+called live until its URL, secret, and successful end-to-end evidence exist.

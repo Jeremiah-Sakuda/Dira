@@ -8,7 +8,9 @@ import { z } from 'zod';
 
 export const RawEmailEventSchema = z.object({
   eventId: z.string().min(1),
-  source: z.literal('gmail'),
+  /** gmail is an email delivery; gemma_voice_note is a user-owned recording
+   * transcribed by the optional Gemma 3n service. Both remain untrusted input. */
+  source: z.enum(['gmail', 'gemma_voice_note']),
   threadId: z.string().min(1),
   messageId: z.string().min(1),
   from: z.string().min(1),
@@ -18,6 +20,21 @@ export const RawEmailEventSchema = z.object({
   receivedAtIso: z.string(),
 });
 export type RawEmailEvent = z.infer<typeof RawEmailEventSchema>;
+
+/**
+ * Raw user audio for the optional Gemma 3n intake service. Audio is never
+ * handed to the planner: Gemma returns a transcript, which re-enters Dira as
+ * an untrusted gemma_voice_note event and must pass every normal gate.
+ */
+export const RawVoiceNoteSchema = z.object({
+  eventId: z.string().min(1),
+  noteId: z.string().min(1),
+  recordedBy: z.string().email(),
+  audioBase64: z.string().min(32).max(8_000_000),
+  mimeType: z.enum(['audio/wav', 'audio/mpeg', 'audio/mp4', 'audio/webm']),
+  receivedAtIso: z.string().datetime({ offset: true }),
+});
+export type RawVoiceNote = z.infer<typeof RawVoiceNoteSchema>;
 
 export const MutationTypeSchema = z.enum([
   'schedule_change',
