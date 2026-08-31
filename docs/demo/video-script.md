@@ -210,7 +210,7 @@ back to Tab 2's resolved outcome card for the final line.
 - [ ] `LIVE CLOUD` visible from click through `RESOLVED`; segment uncut and
       ≤ ~110 seconds.
 - [ ] The 409, observe, replan, verify, and positive slack are readable.
-- [ ] Raw `.run.app` `/health` response shown in the terminal.
+- [ ] Raw `.run.app` `/health` response shown (browser Tab 8 or terminal).
 - [ ] Workflow ID visibly identical on the outcome card, the Logs Explorer
       entry, and the Firestore ledger document.
 - [ ] Calendar before/after shown on the seeded Aug 16–22 week; the
