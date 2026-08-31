@@ -9,3 +9,5 @@ numpy>=2.0.0
 # even for audio-only use, so pipeline construction fails without them.
 timm>=1.0.15
 pillow>=11.0.0
+# transformers' audio chat-template loading requires librosa at runtime.
+librosa>=0.10.2
