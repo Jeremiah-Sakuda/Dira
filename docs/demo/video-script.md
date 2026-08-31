@@ -154,8 +154,9 @@ in the next beat.
    ~6 seconds. (Tab 6 remains the untouched "before" for contrast if you
    want one flip between them.)
 2. Tab 4 (Logs Explorer): click into the query editor, type
-   `jsonPayload.run="` then paste the copied ID and close the quote, press
-   **Run query**. Click the expand arrow on the entry whose summary says
+   `jsonPayload.run="` then paste the workflow ID you copied from the
+   outcome card in the previous beat (the `wf-evt-…` string) and close the
+   quote, press **Run query**. Click the expand arrow on the entry whose summary says
    **workflow finished**; the expanded `jsonPayload` shows the Gemini model
    and latency. ~12 seconds. This is the Logs Explorer tab, not the Cloud
    Run service's Logs panel.
