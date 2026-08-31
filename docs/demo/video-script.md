@@ -39,11 +39,11 @@ Devpost video.
 | 6 | Google Calendar "before" | Week of **Aug 16–22, 2026** (current week is empty by design) |
 | 7 | Google Calendar "after" | Same week; you will refresh this one after the run |
 
-Plus one terminal window with this line pre-typed (do not run it yet):
+| 8 | https://dira-orchestrator-oq463fciiq-uc.a.run.app/health | The raw JSON `{"ok":true,"mode":"production"}` rendered in the browser. This is the "public endpoint" beat; no terminal needed. |
 
-```
-curl https://dira-orchestrator-oq463fciiq-uc.a.run.app/health
-```
+(If you prefer the terminal look: open macOS Terminal — Cmd+Space, type
+"Terminal" — pre-type `curl https://dira-orchestrator-oq463fciiq-uc.a.run.app/health`
+and press Enter on camera. Same proof either way.)
 
 ## Pre-record checklist
 
@@ -77,9 +77,10 @@ story and impacted commitments are on screen.
 
 ### 0:14–0:28 — this is live, not a mockup
 
-**Where:** Tab 3 (Cloud Run, header strip only) for ~4 seconds, then the
-terminal. **Do:** in the terminal, press Enter on the pre-typed curl; the
-response `{"ok":true,"mode":"production"}` appears. Do not scroll Tab 3.
+**Where:** Tab 3 (Cloud Run, header strip only) for ~4 seconds, then Tab 8.
+**Do:** switch to Tab 8, which shows the raw endpoint's JSON
+`{"ok":true,"mode":"production"}` in the browser (refresh it once on camera
+if you want it to feel live). Do not scroll Tab 3.
 
 > "Everything you are about to watch runs live on Google Cloud. Here is the
 > Cloud Run service, and here is its public endpoint answering in production
